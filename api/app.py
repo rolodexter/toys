@@ -4,16 +4,23 @@ Flask application with authentication.
 
 import os
 import logging
+import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging to stdout
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
 logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+
+logger.info('Flask app initialized')
 
 # Root endpoint
 @app.route('/')
