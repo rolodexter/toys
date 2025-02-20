@@ -33,13 +33,13 @@ else:
         psycogreen.gevent.patch_psycopg()
 
     from app_factory import create_app
+    from health import health_check
 
     app = create_app()
     celery = app.extensions["celery"]
 
-    @app.route('/health')
-    def health_check():
-        return {'status': 'healthy'}, 200
+    # Health check endpoint
+    app.route('/health')(health_check)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
