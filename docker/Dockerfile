@@ -16,17 +16,16 @@ RUN apt-get update && \
 # Copy the Dify API files
 COPY --from=langgenius/dify-api:0.15.3 /app /app/api
 
-# Set up Python environment
+# Set up Python environment and install dependencies
 RUN python -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install --upgrade pip
-
-# Download nltk data
-RUN python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"
+    pip install --upgrade pip && \
+    pip install nltk tiktoken && \
+    python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')" && \
+    python -c "import tiktoken; tiktoken.encoding_for_model('gpt2')"
 
 # Set up tiktoken cache
 ENV TIKTOKEN_CACHE_DIR=/app/api/.tiktoken_cache
-RUN python -c "import tiktoken; tiktoken.encoding_for_model('gpt2')"
 
 FROM langgenius/dify-web:0.15.3 as web
 
