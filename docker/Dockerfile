@@ -21,6 +21,30 @@ RUN apt-get update \
 # Copy Dify API files
 COPY --from=langgenius/dify-api:0.15.3 /app /app/api
 
+# Create gunicorn config
+COPY <<EOF /app/api/gunicorn_config.py
+# -*- coding: utf-8 -*-
+import multiprocessing
+import os
+
+debug = os.environ.get('FLASK_DEBUG', '0') == '1'
+bind = '0.0.0.0:5001'
+workers = 4
+threads = 2
+worker_class = 'gevent'
+worker_connections = 1000
+timeout = 120
+keepalive = 2
+
+capture_output = True
+accesslog = '-'
+errorlog = '-'
+access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
+
+reload = debug
+preload_app = not debug
+EOF
+
 # Copy requirements file
 COPY docker/requirements.txt /app/api/requirements.txt
 
@@ -45,7 +69,7 @@ WORKDIR /app/api
 # Install system dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    curl procps \
+    curl procps libpq5 \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
@@ -67,22 +91,13 @@ ENV FLASK_APP=app.py \
     FLASK_ENV=production \
     SECRET_KEY=your-secret-key \
     SQLALCHEMY_DATABASE_URI=sqlite:///db.sqlite \
-    REDIS_HOST=localhost \
-    REDIS_PORT=6379 \
-    REDIS_DB=0 \
-    REDIS_USERNAME="" \
-    REDIS_PASSWORD="" \
-    REDIS_USE_SSL=false \
     SESSION_TYPE=filesystem \
     SESSION_PERMANENT=true \
     SESSION_USE_SIGNER=true \
-    OAUTH_REDIRECT_PATH=/console/api/oauth/authorize \
-    OAUTH_REDIRECT_INDEX_PATH=/console/oauth/callback \
-    CONSOLE_URL=http://127.0.0.1:3000 \
-    API_URL=http://127.0.0.1:5001 \
-    APP_URL=http://127.0.0.1:3000 \
-    DEFAULT_LANG=en-US \
-    CLEAN_UNFINISHED_INIT_MODEL_TASK=true
+    CLEAN_UNFINISHED_INIT_MODEL_TASK=true \
+    LOGGER_TYPE=basic \
+    HOSTED_SETUP_COMPLETED=true \
+    LOG_LEVEL=INFO
 
 # Create a health check script
 COPY <<EOF /healthcheck.sh
@@ -99,6 +114,17 @@ echo "=== Memory Usage ==="
 free -h || echo "free command not available"
 echo "=== Disk Space ==="
 df -h
+
+# Check if gunicorn is running
+echo "=== Checking gunicorn process ==="
+if ! pgrep -f "gunicorn"; then
+    echo "ERROR: Gunicorn process not found"
+    echo "=== API Logs ==="
+    tail -n 100 /app/api/gunicorn.log
+    echo "=== Environment Variables ==="
+    env
+    exit 1
+fi
 
 # Check if the API is responding
 echo "Checking API health..."
@@ -117,8 +143,9 @@ EOF
 
 RUN chmod +x /healthcheck.sh
 
-# Create required directories
-RUN mkdir -p /app/api/instance /app/api/logs
+# Create required directories and set permissions
+RUN mkdir -p /app/api/instance /app/api/logs && \
+    chmod -R 755 /app/api/instance /app/api/logs
 
 # Expose API port
 EXPOSE 5001
@@ -128,4 +155,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=5 \
     CMD /healthcheck.sh
 
 # Start the API server with the virtual environment
-CMD ["/bin/bash", "-c", "source /app/api/venv/bin/activate && gunicorn -c gunicorn_config.py --log-file /app/api/gunicorn.log app:app"]
+CMD ["/bin/bash", "-c", "source /app/api/venv/bin/activate && PYTHONPATH=/app/api exec gunicorn -c gunicorn_config.py app:app"]

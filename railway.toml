@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "docker/Dockerfile"
 
 [deploy]
-startCommand = "/bin/bash -c 'source /app/api/venv/bin/activate && gunicorn -c gunicorn_config.py --log-file /app/api/gunicorn.log app:app'"
+startCommand = "/bin/bash -c 'source /app/api/venv/bin/activate && PYTHONPATH=/app/api exec gunicorn -c gunicorn_config.py app:app'"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
@@ -57,7 +57,7 @@ PGVECTOR_PASSWORD = "${PGPASSWORD}"
 PGVECTOR_DATABASE = "${PGDATABASE}"
 
 # Core Settings
-SECRET_KEY = "${SECRET_KEY}"
+SECRET_KEY = "your-secret-key"
 INIT_PASSWORD = "${INIT_PASSWORD}"
 
 # Server Configuration
@@ -69,3 +69,13 @@ GUNICORN_TIMEOUT = "360"
 CELERY_WORKER_CLASS = "gevent"
 CELERY_WORKER_AMOUNT = "2"
 MIGRATION_ENABLED = "true"
+
+# Additional Environment Variables
+SQLALCHEMY_DATABASE_URI = "sqlite:///db.sqlite"
+SESSION_TYPE = "filesystem"
+SESSION_PERMANENT = "true"
+SESSION_USE_SIGNER = "true"
+CLEAN_UNFINISHED_INIT_MODEL_TASK = "true"
+LOGGER_TYPE = "basic"
+HOSTED_SETUP_COMPLETED = "true"
+LOG_LEVEL = "INFO"
