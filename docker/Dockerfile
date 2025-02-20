@@ -26,10 +26,9 @@ RUN python -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
     pip install --upgrade pip setuptools wheel tomli
 
-# Install dependencies from pyproject.toml
-COPY pyproject.toml /app/api/
+# Install dependencies from Dify image
 RUN . /app/api/venv/bin/activate && \
-    python -c 'import tomli; print("\n".join(tomli.load(open("pyproject.toml", "rb"))["project"]["dependencies"]))' > requirements.txt && \
+    pip freeze --local > requirements.txt && \
     pip install -r requirements.txt && \
     pip install nltk tiktoken && \
     rm requirements.txt
