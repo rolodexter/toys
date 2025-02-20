@@ -37,12 +37,12 @@ EXPOSE 8080
 
 # Change to the api directory and start gunicorn
 WORKDIR /app/api
-CMD ["gunicorn", \
-     "--bind", "0.0.0.0:8080", \
-     "--workers", "1", \
-     "--log-level", "debug", \
-     "--timeout", "300", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "--capture-output", \
-     "app:app"]
+CMD gunicorn \
+    --bind 0.0.0.0:8080 \
+    --workers 1 \
+    --log-level debug \
+    --timeout 300 \
+    --access-logfile - \
+    --error-logfile - \
+    --capture-output \
+    app:app

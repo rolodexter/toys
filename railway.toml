@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile.web"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 numReplicas = 1
@@ -26,26 +26,3 @@ PGPORT = "${{PGPORT}}"
 PGDATABASE = "${{PGDATABASE}}"
 PGUSER = "${{PGUSER}}"
 PGPASSWORD = "${{PGPASSWORD}}"
-
-# Using shared variables for Redis configuration
-REDIS_HOST = "${{REDISHOST}}"  # Using REDISHOST as it's in shared variables
-REDIS_PORT = "${{REDISPORT}}"  # Using REDISPORT as it's in shared variables
-REDIS_PASSWORD = "${{REDISPASSWORD}}"  # Using REDISPASSWORD as it's in shared variables
-REDIS_USER = "${{REDISUSER}}"  # Using REDISUSER as it's in shared variables
-REDIS_USE_SSL = "true"
-REDIS_DB = "0"
-REDIS_URL = "${{REDIS_URL}}"
-REDIS_PUBLIC_URL = "${{REDIS_PUBLIC_URL}}"
-REDIS_AOF_ENABLED = "${{REDIS_AOF_ENABLED}}"
-REDIS_RDB_POLICY = "${{REDIS_RDB_POLICY}}"
-
-# Using shared Railway variables
-RAILWAY_PROJECT_ID = "${{RAILWAY_PROJECT_ID}}"
-RAILWAY_ENVIRONMENT_ID = "${{RAILWAY_ENVIRONMENT_ID}}"
-RAILWAY_SERVICE_ID = "${{RAILWAY_SERVICE_ID}}"
-RAILWAY_SERVICE_NAME = "${{RAILWAY_SERVICE_NAME}}"
-RAILWAY_PROJECT_NAME = "${{RAILWAY_PROJECT_NAME}}"
-RAILWAY_ENVIRONMENT_NAME = "${{RAILWAY_ENVIRONMENT_NAME}}"
-
-# Generate a random secret key for sessions
-SECRET_KEY = "${{RAILWAY_PRIVATE_KEY}}"
