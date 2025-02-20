@@ -49,7 +49,7 @@ RUN . /app/api/venv/bin/activate && \
     langchain==0.1.6 \
     langchain-openai==0.0.5 \
     langchain-community==0.0.19 \
-    langfuse==2.14.0 \
+    langfuse==2.51.5 \
     unstructured==0.12.3 \
     nltk==3.8.1 \
     numpy==1.26.4 \
@@ -57,7 +57,15 @@ RUN . /app/api/venv/bin/activate && \
     beautifulsoup4==4.12.3 \
     python-magic==0.4.27 \
     pydantic==2.6.1 \
-    pydantic-settings==2.1.0
+    pydantic-settings==2.1.0 \
+    flask-compress==1.14 \
+    flask-cors==4.0.0 \
+    flask-limiter==3.5.0 \
+    flask-session==0.6.0 \
+    flask-smorest==0.42.3 \
+    flask-socketio==5.3.6 \
+    flask-sqlalchemy==3.1.1 \
+    flask-wtf==1.2.1
 
 # Download NLTK data and set up tiktoken
 RUN . /app/api/venv/bin/activate && \
@@ -72,7 +80,7 @@ FROM langgenius/dify-web:0.15.3 as web
 FROM nginx:alpine
 
 # Install dependencies
-RUN apk add --no-cache supervisor python3 py3-pip nodejs npm bash
+RUN apk add --no-cache supervisor python3 py3-pip nodejs npm bash curl
 
 # Copy the Dify API files
 COPY --from=base /app/api /app/api
