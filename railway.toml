@@ -1,0 +1,70 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "docker/railway-compose.yaml"
+
+[deploy]
+startCommand = "docker-compose up -d"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# Railway Volumes Configuration
+[[volume]]
+name = "dify-data"
+mountPath = "/app/data"
+size = "10Gi"
+
+[[volume]]
+name = "dify-storage"
+mountPath = "/app/storage"
+size = "10Gi"
+
+[env]
+DEPLOY_ENV = "PRODUCTION"
+DEBUG = "false"
+FLASK_DEBUG = "false"
+CONSOLE_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+CONSOLE_WEB_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+SERVICE_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+APP_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+APP_WEB_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+FILES_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+
+# Database Configuration
+DB_USERNAME = "${PGUSER}"
+DB_PASSWORD = "${PGPASSWORD}"
+DB_HOST = "${PGHOST}"
+DB_PORT = "${PGPORT}"
+DB_DATABASE = "${PGDATABASE}"
+
+# Redis Configuration
+REDIS_HOST = "${REDISHOST}"
+REDIS_PORT = "${REDISPORT}"
+REDIS_USERNAME = "${REDISUSER}"
+REDIS_PASSWORD = "${REDISPASSWORD}"
+REDIS_DB = "0"
+
+# Vector Database (using pgvector)
+VECTOR_DB_TYPE = "pgvector"
+PGVECTOR_HOST = "${PGHOST}"
+PGVECTOR_PORT = "${PGPORT}"
+PGVECTOR_USER = "${PGUSER}"
+PGVECTOR_PASSWORD = "${PGPASSWORD}"
+PGVECTOR_DATABASE = "${PGDATABASE}"
+
+# Core Settings
+SECRET_KEY = "${SECRET_KEY}"
+INIT_PASSWORD = "${INIT_PASSWORD}"
+CONSOLE_CORS_ALLOW_ORIGINS = "*"
+
+# Server Configuration
+DIFY_BIND_ADDRESS = "0.0.0.0"
+SERVER_WORKER_AMOUNT = "2"
+SERVER_WORKER_CLASS = "gevent"
+GUNICORN_TIMEOUT = "360"
+
+# Celery Configuration
+CELERY_WORKER_CLASS = "gevent"
+CELERY_WORKER_AMOUNT = "2"
+MIGRATION_ENABLED = "true"

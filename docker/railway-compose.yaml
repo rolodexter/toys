@@ -1,0 +1,82 @@
+version: '3.8'
+
+x-shared-env: &shared-api-worker-env
+  CONSOLE_API_URL: ${CONSOLE_API_URL}
+  CONSOLE_WEB_URL: ${CONSOLE_WEB_URL}
+  SERVICE_API_URL: ${SERVICE_API_URL}
+  APP_API_URL: ${APP_API_URL}
+  APP_WEB_URL: ${APP_WEB_URL}
+  FILES_URL: ${FILES_URL}
+  DEBUG: ${DEBUG:-false}
+  FLASK_DEBUG: ${FLASK_DEBUG:-false}
+  SECRET_KEY: ${SECRET_KEY}
+  INIT_PASSWORD: ${INIT_PASSWORD}
+  DEPLOY_ENV: ${DEPLOY_ENV:-PRODUCTION}
+  MIGRATION_ENABLED: ${MIGRATION_ENABLED:-true}
+  DB_USERNAME: ${DB_USERNAME}
+  DB_PASSWORD: ${DB_PASSWORD}
+  DB_HOST: ${DB_HOST}
+  DB_PORT: ${DB_PORT}
+  DB_DATABASE: ${DB_DATABASE}
+  REDIS_HOST: ${REDIS_HOST}
+  REDIS_PORT: ${REDIS_PORT}
+  REDIS_USERNAME: ${REDIS_USERNAME}
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  REDIS_DB: ${REDIS_DB:-0}
+  VECTOR_DB_TYPE: ${VECTOR_DB_TYPE:-pgvector}
+
+services:
+  # API service
+  api:
+    image: langgenius/dify-api:0.15.3
+    restart: always
+    environment:
+      <<: *shared-api-worker-env
+      SERVER_WORKER_AMOUNT: ${SERVER_WORKER_AMOUNT:-2}
+      SERVER_WORKER_CLASS: ${SERVER_WORKER_CLASS:-gevent}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-360}
+    ports:
+      - "5001:5001"
+    volumes:
+      - type: bind
+        source: ${RAILWAY_VOLUME_DIFY_DATA_PATH}
+        target: /app/data
+      - type: bind
+        source: ${RAILWAY_VOLUME_DIFY_STORAGE_PATH}
+        target: /app/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Web service
+  web:
+    image: langgenius/dify-web:0.15.3
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_PREFIX: ${CONSOLE_API_URL}/console/api
+      NEXT_PUBLIC_PUBLIC_API_PREFIX: ${APP_API_URL}/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  # Worker service
+  worker:
+    image: langgenius/dify-api:0.15.3
+    restart: always
+    environment:
+      <<: *shared-api-worker-env
+      CELERY_WORKER_CLASS: ${CELERY_WORKER_CLASS:-gevent}
+      CELERY_WORKER_AMOUNT: ${CELERY_WORKER_AMOUNT:-2}
+    volumes:
+      - type: bind
+        source: ${RAILWAY_VOLUME_DIFY_DATA_PATH}
+        target: /app/data
+      - type: bind
+        source: ${RAILWAY_VOLUME_DIFY_STORAGE_PATH}
+        target: /app/storage
+    command: celery -A app.celery worker -P ${CELERY_WORKER_CLASS:-gevent} --loglevel=info --concurrency=${CELERY_WORKER_AMOUNT:-2}
+    depends_on:
+      - api
