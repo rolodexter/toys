@@ -1,0 +1,25 @@
+{
+  "variables": {
+    "PORT": "8000",
+    "FLASK_APP": "api/app.py",
+    "PYTHONUNBUFFERED": "1",
+    "NODE_ENV": "development",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "NEXT_PORT": "3000",
+    
+    "CONSOLE_API_URL": "http://localhost:8000",
+    "CONSOLE_WEB_URL": "http://localhost:3000",
+    "SERVICE_API_URL": "http://localhost:8000",
+    "APP_WEB_URL": "http://localhost:3000",
+    "FILES_URL": "http://localhost:8000",
+    
+    "REDIS_HOST": "localhost",
+    "REDIS_PORT": "6379",
+    "REDIS_PASSWORD": "difyai123456",
+    "REDIS_USERNAME": "default",
+    "REDIS_USE_SSL": "false",
+    "REDIS_DB": "0",
+    
+    "SECRET_KEY": "development-secret-key"
+  }
+}
