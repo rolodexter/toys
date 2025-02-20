@@ -5,6 +5,7 @@ from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 from .database import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_ENGINE_OPTIONS, SQLALCHEMY_TRACK_MODIFICATIONS
+from .redis import REDIS_CONFIG
 from .deploy import DeploymentConfig
 from .enterprise import EnterpriseFeatureConfig
 from .extra import ExtraServiceConfig
@@ -65,11 +66,15 @@ class DifyConfig(
     # Enterprise feature configs
     # **Before using, please contact business@dify.ai by email to inquire about licensing matters.**
     EnterpriseFeatureConfig,
+    BaseSettings
 ):
     # Database settings
     SQLALCHEMY_DATABASE_URI: str = SQLALCHEMY_DATABASE_URI
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = SQLALCHEMY_TRACK_MODIFICATIONS
     SQLALCHEMY_ENGINE_OPTIONS: dict = SQLALCHEMY_ENGINE_OPTIONS
+
+    # Redis settings
+    REDIS_CONFIG: dict = REDIS_CONFIG
 
     model_config = SettingsConfigDict(
         # read from dotenv format config file
@@ -78,11 +83,6 @@ class DifyConfig(
         # ignore extra attributes
         extra="ignore",
     )
-
-    # Before adding any config,
-    # please consider to arrange it in the proper config group of existed or added
-    # for better readability and maintainability.
-    # Thanks for your concentration and consideration.
 
     @classmethod
     def settings_customise_sources(
@@ -100,3 +100,8 @@ class DifyConfig(
             dotenv_settings,
             file_secret_settings,
         )
+
+    # Before adding any config,
+    # please consider to arrange it in the proper config group of existed or added
+    # for better readability and maintainability.
+    # Thanks for your concentration and consideration.
