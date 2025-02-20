@@ -29,6 +29,7 @@ FILES_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{
 
 # Database configuration (using references to toys-postgres service)
 DATABASE_URL = "${{toys-postgres.DATABASE_URL}}"
+DATABASE_PUBLIC_URL = "${{toys-postgres.DATABASE_PUBLIC_URL}}"
 PGHOST = "${{toys-postgres.PGHOST}}"
 PGPORT = "${{toys-postgres.PGPORT}}"
 PGDATABASE = "${{toys-postgres.PGDATABASE}}"
@@ -39,10 +40,11 @@ PGPASSWORD = "${{toys-postgres.PGPASSWORD}}"
 REDIS_HOST = "${{toys-redis.REDISHOST}}"
 REDIS_PORT = "${{toys-redis.REDISPORT}}"
 REDIS_PASSWORD = "${{toys-redis.REDISPASSWORD}}"
-REDIS_USERNAME = "default"
+REDIS_USERNAME = "${{toys-redis.REDISUSER}}"
 REDIS_USE_SSL = "true"
 REDIS_DB = "0"
 REDIS_URL = "${{toys-redis.REDIS_URL}}"
+REDIS_PUBLIC_URL = "${{toys-redis.REDIS_PUBLIC_URL}}"
 
 # Generate a random secret key for sessions
 SECRET_KEY = "${{RAILWAY_PRIVATE_KEY}}"
