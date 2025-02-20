@@ -41,8 +41,8 @@ FROM python:3.12-slim-bookworm
 WORKDIR /app
 
 # Set environment variables for PostgreSQL
-ENV PATH="/usr/lib/postgresql/16/bin:${PATH}" \
-    PG_MAJOR=16
+ENV PATH="/usr/lib/postgresql/15/bin:${PATH}" \
+    PG_MAJOR=15
 
 # Install system dependencies and clean up in same layer
 RUN apt-get update && \
