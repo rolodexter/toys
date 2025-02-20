@@ -8,14 +8,16 @@ FROM nginx:alpine
 # Install dependencies
 RUN apk add --no-cache supervisor python3 py3-pip nodejs npm py3-virtualenv
 
-# Copy the Dify API files
+# Copy the Dify API files and requirements
+COPY --from=api /app/requirements.txt /tmp/requirements.txt
+RUN python3 -m venv /app/api/venv && \
+    . /app/api/venv/bin/activate && \
+    pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Now copy the rest of the API files
 COPY --from=api /app /app/api
 WORKDIR /app/api
-
-# Create and activate virtual environment
-RUN python3 -m venv /app/api/venv
 ENV PATH="/app/api/venv/bin:$PATH"
-RUN . /app/api/venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 
 # Copy the Dify web files
 COPY --from=web /app /app/web
