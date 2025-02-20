@@ -1,5 +1,5 @@
-# base image
-FROM python:3.12-slim-bookworm AS base
+# Stage 1: Build API
+FROM python:3.12-slim-bookworm AS api-base
 
 WORKDIR /app/api
 
@@ -21,13 +21,10 @@ RUN apt-get update \
 # Copy Dify API files
 COPY --from=langgenius/dify-api:0.15.3 /app /app/api
 
-# Set up Python environment
+# Set up Python environment and install dependencies
 RUN python -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install --upgrade pip setuptools wheel
-
-# Install dependencies
-RUN . /app/api/venv/bin/activate && \
+    pip install --upgrade pip setuptools wheel && \
     pip install \
     flask==3.0.2 \
     flask-login==0.6.3 \
@@ -64,7 +61,6 @@ RUN . /app/api/venv/bin/activate && \
     flask-session==0.6.0 \
     flask-smorest==0.42.3 \
     flask-socketio==5.3.6 \
-    flask-sqlalchemy==3.1.1 \
     flask-wtf==1.2.1
 
 # Download NLTK data and set up tiktoken
@@ -74,16 +70,17 @@ RUN . /app/api/venv/bin/activate && \
 
 ENV TIKTOKEN_CACHE_DIR=/app/api/.tiktoken_cache
 
+# Stage 2: Build Web
 FROM langgenius/dify-web:0.15.3 as web
 
-# Final stage
+# Stage 3: Final image
 FROM nginx:alpine
 
 # Install dependencies
 RUN apk add --no-cache supervisor python3 py3-pip nodejs npm bash curl
 
 # Copy the Dify API files
-COPY --from=base /app/api /app/api
+COPY --from=api-base /app/api /app/api
 WORKDIR /app/api
 
 # Copy the Dify web files
