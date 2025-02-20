@@ -8,7 +8,6 @@ import sys
 import os
 from models import db
 
-# Configure logging
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -16,115 +15,153 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Main interface template
 MAIN_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
     <title>Rolodexter</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f5f5f5;
-        }
-        .header {
-            background: #24292e;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 1rem;
-        }
         .chat-container {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 1rem;
-        }
-        .input-container {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        textarea {
-            flex-grow: 1;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            min-height: 60px;
-            font-family: inherit;
-        }
-        button {
-            padding: 0.5rem 1rem;
-            background: #2ea44f;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #2c974b;
+            height: calc(100vh - 140px);
         }
         .message {
-            margin: 1rem 0;
+            max-width: 85%;
+            margin-bottom: 1rem;
             padding: 1rem;
-            border-radius: 4px;
+            border-radius: 0.5rem;
+            line-height: 1.5;
         }
         .user-message {
-            background: #f0f0f0;
+            background-color: #f3f4f6;
+            margin-left: auto;
         }
         .assistant-message {
-            background: #e3f2fd;
+            background-color: #e5e7eb;
+            margin-right: auto;
+        }
+        .typing-indicator::after {
+            content: '...';
+            animation: typing 1s infinite;
+        }
+        @keyframes typing {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
         }
     </style>
 </head>
-<body>
-    <div class="header">
-        <h1>Rolodexter</h1>
-    </div>
-    <div class="container">
-        <div class="chat-container">
-            <div id="chat-messages">
-                <!-- Messages will appear here -->
-            </div>
-            <div class="input-container">
-                <textarea id="user-input" placeholder="Type your message here..."></textarea>
-                <button onclick="sendMessage()">Send</button>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold">Rolodexter</h1>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-6">
+            <div class="bg-white shadow rounded-lg">
+                <div id="chat-messages" class="chat-container overflow-y-auto p-4">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="border-t p-4">
+                    <div class="flex space-x-4">
+                        <textarea 
+                            id="user-input"
+                            class="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Send a message..."
+                            rows="3"
+                        ></textarea>
+                        <button 
+                            onclick="sendMessage()"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
-        function sendMessage() {
-            const input = document.getElementById('user-input');
-            const message = input.value.trim();
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            // Create message content
+            const textDiv = document.createElement('div');
+            textDiv.className = 'whitespace-pre-wrap';
+            textDiv.textContent = content;
+            messageDiv.appendChild(textDiv);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'message assistant-message typing-indicator';
+            indicator.textContent = 'Thinking';
+            chatMessages.appendChild(indicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return indicator;
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
             if (!message) return;
+
+            // Clear input
+            userInput.value = '';
 
             // Add user message
             addMessage(message, 'user');
-            input.value = '';
 
-            // TODO: Send to backend and get response
-            // For now, just echo back
-            setTimeout(() => {
-                addMessage('I received your message: ' + message, 'assistant');
-            }, 500);
+            // Add typing indicator
+            const indicator = addTypingIndicator();
+
+            try {
+                // Send to backend
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                indicator.remove();
+
+                // Add assistant response
+                addMessage(data.response, 'assistant');
+            } catch (error) {
+                console.error('Error:', error);
+                indicator.remove();
+                addMessage('Sorry, there was an error processing your request.', 'assistant');
+            }
         }
 
-        function addMessage(text, sender) {
-            const messages = document.getElementById('chat-messages');
-            const div = document.createElement('div');
-            div.className = `message ${sender}-message`;
-            div.textContent = text;
-            messages.appendChild(div);
-            messages.scrollTop = messages.scrollHeight;
-        }
+        // Handle Enter key
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>
@@ -156,6 +193,19 @@ def create_app():
         """Home page endpoint - shows the main interface"""
         logger.info('Home page request received')
         return render_template_string(MAIN_TEMPLATE)
+
+    @app.route('/api/chat', methods=['POST'])
+    def chat():
+        """Chat API endpoint"""
+        data = request.json
+        message = data.get('message', '')
+        
+        # For now, just echo back
+        response = f"I received your message: {message}"
+        
+        return jsonify({
+            'response': response
+        })
 
     @app.route('/health')
     def health():
