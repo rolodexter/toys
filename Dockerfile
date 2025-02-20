@@ -2,27 +2,20 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy application files
-COPY app.py wsgi.py ./
+COPY app.py wsgi.py models.py ./
 COPY templates templates/
 
-ENV PORT=8080
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+ENV PORT=8080
 
+# Expose the port
 EXPOSE 8080
 
-CMD ["gunicorn", \
-    "--bind", "0.0.0.0:8080", \
-    "--workers", "1", \
-    "--log-level", "debug", \
-    "--capture-output", \
-    "--access-logfile", "-", \
-    "--error-logfile", "-", \
-    "--timeout", "300", \
-    "wsgi:app"]
+# Run the application
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "wsgi:app"]
