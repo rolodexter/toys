@@ -2,8 +2,8 @@
 Health check module for Railway deployment.
 
 Required for Railway's health check system. For configuration details, see:
-- /rolodexters/rolodexterVS/tasks/in_progress/railway_deployment.md
-- /rolodexters/rolodexterVS/memories/railway_deployment_config.md
+- /rolodexters/rolodextervs/tasks/in_progress/railway_deployment.md
+- /rolodexters/rolodextervs/memories/railway_deployment_config.md
 """
 
 from flask import current_app, jsonify
@@ -48,7 +48,7 @@ def health_check():
     Comprehensive health check endpoint.
     
     Required by Railway for deployment validation.
-    See /rolodexters/rolodexterVS/tasks/in_progress/railway_deployment.md
+    See /rolodexters/rolodextervs/tasks/in_progress/railway_deployment.md
     """
     db_healthy = check_database()
     redis_healthy = check_redis()
