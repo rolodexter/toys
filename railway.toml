@@ -11,18 +11,5 @@ healthcheckTimeout = 300
 serverless = true
 
 [variables]
-# Service configuration
 PORT = "8080"
-FLASK_APP = "/app/api/app.py"
 PYTHONUNBUFFERED = "1"
-FLASK_ENV = "production"
-PYTHONPATH = "/app"
-
-# Using shared variables for database configuration
-DATABASE_URL = "${{DATABASE_URL}}"
-DATABASE_PUBLIC_URL = "${{DATABASE_PUBLIC_URL}}"
-PGHOST = "${{PGHOST}}"
-PGPORT = "${{PGPORT}}"
-PGDATABASE = "${{PGDATABASE}}"
-PGUSER = "${{PGUSER}}"
-PGPASSWORD = "${{PGPASSWORD}}"
