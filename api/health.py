@@ -1,9 +1,21 @@
+"""
+Health check module for Railway deployment.
+
+Required for Railway's health check system. For configuration details, see:
+- /rolodexters/rolodexterVS/tasks/in_progress/railway_deployment.md
+- /rolodexters/rolodexterVS/memories/railway_deployment_config.md
+"""
+
 from flask import current_app, jsonify
 from sqlalchemy import text
 from redis.exceptions import RedisError
 
 def check_database():
-    """Check if database is accessible."""
+    """
+    Check if database is accessible.
+    
+    Uses connection pooling settings from deployment config.
+    """
     try:
         # Get database connection from SQLAlchemy
         db = current_app.extensions['sqlalchemy'].db
@@ -16,7 +28,11 @@ def check_database():
         return False
 
 def check_redis():
-    """Check if Redis is accessible."""
+    """
+    Check if Redis is accessible.
+    
+    Uses connection settings from deployment config.
+    """
     try:
         # Get Redis client
         redis_client = current_app.extensions['redis'].redis_client
@@ -28,7 +44,12 @@ def check_redis():
         return False
 
 def health_check():
-    """Comprehensive health check endpoint."""
+    """
+    Comprehensive health check endpoint.
+    
+    Required by Railway for deployment validation.
+    See /rolodexters/rolodexterVS/tasks/in_progress/railway_deployment.md
+    """
     db_healthy = check_database()
     redis_healthy = check_redis()
     

@@ -1,4 +1,4 @@
-# Rolodexters Organizational Structure
+# rolodexter's organizational structure
 
 [CREATED: 2024-02-20]
 [STATUS: ACTIVE]
@@ -8,16 +8,16 @@
 ## Organizational Structure
 
 ```
-Joe Maristela (Human Executive)
+joe maristela (human executive)
         ↓
-   rolodexterGPT (Strategy)
+   rolodextergpt (strategy)
         ↓
-   rolodexterVS (Development)
+   rolodextervs (development)
 ```
 
 ## Agent Roles and Responsibilities
 
-### 1. Joe Maristela
+### 1. joe maristela
 
 **Role**: Human Executive Operator/Referee
 **Location**: C:\toys\rolodexters\joe-maristela
@@ -33,14 +33,14 @@ Joe Maristela (Human Executive)
 
 #### Communication Channels
 
-- Direct interaction with rolodexterGPT for strategy
+- Direct interaction with rolodextergpt for strategy
 - Reviews and approves major technical decisions
 - Sets project objectives and constraints
 
-### 2. rolodexterGPT
+### 2. rolodextergpt
 
 **Role**: Strategic Planning and Executive AI Agent
-**Location**: C:\toys\rolodexters\rolodexterGPT
+**Location**: C:\toys\rolodexters\rolodextergpt
 
 #### Responsibilities
 
@@ -53,7 +53,7 @@ Joe Maristela (Human Executive)
 
 #### Task Location
 
-C:\toys\rolodexters\rolodexterGPT\tasks\
+C:\toys\rolodexters\rolodextergpt\tasks\
 
 #### Current Active Tasks
 
@@ -62,10 +62,10 @@ C:\toys\rolodexters\rolodexterGPT\tasks\
 - Risk management framework
 - Executive communication protocols
 
-### 3. rolodexterVS
+### 3. rolodextervs
 
 **Role**: Development Automation Agent
-**Location**: C:\toys\rolodexters\rolodexterVS
+**Location**: C:\toys\rolodexters\rolodextervs
 
 #### Responsibilities
 
@@ -78,7 +78,7 @@ C:\toys\rolodexters\rolodexterGPT\tasks\
 
 #### Task Location
 
-C:\toys\rolodexters\rolodexterVS\tasks\
+C:\toys\rolodexters\rolodextervs\tasks\
 
 #### Current Active Tasks
 
@@ -92,20 +92,20 @@ C:\toys\rolodexters\rolodexterVS\tasks\
 
 ### Task Locations
 
-- In Progress: C:\toys\rolodexters\rolodexterVS\tasks\in_progress\
-- Backlog: C:\toys\rolodexters\rolodexterVS\tasks\backlog\
-- Completed: C:\toys\rolodexters\rolodexterVS\tasks\completed\
+- In Progress: C:\toys\rolodexters\rolodextervs\tasks\in_progress\
+- Backlog: C:\toys\rolodexters\rolodextervs\tasks\backlog\
+- Completed: C:\toys\rolodexters\rolodextervs\tasks\completed\
 
 ### Current Task Distribution
 
-1. rolodexterVS Tasks (C:\toys\rolodexters\rolodexterVS\tasks\):
+1. rolodextervs Tasks (C:\toys\rolodexters\rolodextervs\tasks\):
    - Development environment setup
    - Railway deployment
    - Code quality management
    - Memory system implementation
    - Deployment automation
 
-2. rolodexterGPT Tasks (C:\toys\rolodexters\rolodexterGPT\tasks\):
+2. rolodextergpt Tasks (C:\toys\rolodexters\rolodextergpt\tasks\):
    - Strategic planning
    - Resource allocation
    - Risk assessment
@@ -115,13 +115,13 @@ C:\toys\rolodexters\rolodexterVS\tasks\
 
 ### Upward Communication
 
-- rolodexterVS → rolodexterGPT: Technical updates, implementation challenges
-- rolodexterGPT → Joe Maristela: Strategic updates, resource requests
+- rolodextervs → rolodextergpt: Technical updates, implementation challenges
+- rolodextergpt → joe maristela: Strategic updates, resource requests
 
 ### Downward Communication
 
-- Joe Maristela → rolodexterGPT: Strategic decisions, priority changes
-- rolodexterGPT → rolodexterVS: Implementation directives, technical requirements
+- joe maristela → rolodextergpt: Strategic decisions, priority changes
+- rolodextergpt → rolodextervs: Implementation directives, technical requirements
 
 ## Memory Management
 
@@ -131,8 +131,8 @@ C:\toys\rolodexters\rolodexterVS\tasks\
 
 ### Individual Memory Locations
 
-- C:\toys\rolodexters\rolodexterGPT\memories\
-- C:\toys\rolodexters\rolodexterVS\memories\
+- C:\toys\rolodexters\rolodextergpt\memories\
+- C:\toys\rolodexters\rolodextervs\memories\
 - C:\toys\rolodexters\joe-maristela\memories\
 
 ## File Naming Conventions
