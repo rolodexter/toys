@@ -24,14 +24,40 @@ COPY --from=langgenius/dify-api:0.15.3 /app /app/api
 # Set up Python environment
 RUN python -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install --upgrade pip setuptools wheel tomli
+    pip install --upgrade pip setuptools wheel
 
-# Install dependencies from Dify image
+# Install dependencies
 RUN . /app/api/venv/bin/activate && \
-    pip freeze --local > requirements.txt && \
-    pip install -r requirements.txt && \
-    pip install nltk tiktoken && \
-    rm requirements.txt
+    pip install \
+    flask==3.0.2 \
+    flask-login==0.6.3 \
+    flask-migrate==4.0.7 \
+    flask-restful==0.3.10 \
+    flask-sqlalchemy==3.1.1 \
+    sqlalchemy==2.0.29 \
+    psycopg2-binary==2.9.9 \
+    redis==5.0.1 \
+    celery==5.3.6 \
+    gunicorn==21.2.0 \
+    gevent==24.2.1 \
+    authlib==1.3.0 \
+    pyjwt==2.8.0 \
+    cryptography==42.0.2 \
+    python-dotenv==1.0.1 \
+    openai==1.12.0 \
+    tiktoken==0.6.0 \
+    langchain==0.1.6 \
+    langchain-openai==0.0.5 \
+    langchain-community==0.0.19 \
+    langfuse==2.14.0 \
+    unstructured==0.12.3 \
+    nltk==3.8.1 \
+    numpy==1.26.4 \
+    pandas==2.2.0 \
+    beautifulsoup4==4.12.3 \
+    python-magic==0.4.27 \
+    pydantic==2.6.1 \
+    pydantic-settings==2.1.0
 
 # Download NLTK data and set up tiktoken
 RUN . /app/api/venv/bin/activate && \
@@ -46,7 +72,7 @@ FROM langgenius/dify-web:0.15.3 as web
 FROM nginx:alpine
 
 # Install dependencies
-RUN apk add --no-cache supervisor python3 py3-pip nodejs npm
+RUN apk add --no-cache supervisor python3 py3-pip nodejs npm bash
 
 # Copy the Dify API files
 COPY --from=base /app/api /app/api
@@ -65,16 +91,19 @@ COPY <<EOF /etc/supervisor/conf.d/supervisord.conf
 [supervisord]
 nodaemon=true
 user=root
+loglevel=debug
 
 [program:api]
 directory=/app/api
-command=/app/api/venv/bin/python app.py
+command=/app/api/venv/bin/gunicorn -c gunicorn_config.py app:app
+environment=PYTHONPATH=/app/api
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
+priority=1
 
 [program:web]
 directory=/app/web
@@ -85,6 +114,7 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
+priority=2
 
 [program:nginx]
 command=nginx -g 'daemon off;'
@@ -94,7 +124,28 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
+priority=3
 EOF
+
+# Create a health check script
+COPY <<EOF /healthcheck.sh
+#!/bin/bash
+set -e
+
+# Wait for services to be ready
+sleep 10
+
+# Check if supervisor is running
+supervisorctl status all
+
+# Check if the API is responding
+curl -f http://localhost:5001/health || exit 1
+
+# Check if the web interface is accessible
+curl -f http://localhost:3000 || exit 1
+EOF
+
+RUN chmod +x /healthcheck.sh
 
 # Set environment variables
 ENV FLASK_APP=app.py
@@ -105,9 +156,14 @@ ENV CONSOLE_WEB_URL=http://127.0.0.1:3000
 ENV SERVICE_API_URL=http://127.0.0.1:5001
 ENV APP_WEB_URL=http://127.0.0.1:3000
 ENV TZ=UTC
+ENV PYTHONPATH=/app/api
 
 # Expose ports
-EXPOSE 80
+EXPOSE 80 5001 3000
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD /healthcheck.sh
 
 # Start supervisor which will start all services
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
