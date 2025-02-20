@@ -353,12 +353,19 @@ def create_app():
         try:
             # Test database connection using SQLAlchemy 2.0 syntax
             db.session.execute(text('SELECT 1'))
-            db.session.commit()
+            
+            # Check if test user exists
+            user = User.query.filter_by(username='rolodexter').first()
+            user_status = {
+                'exists': user is not None,
+                'has_password': user.password_hash is not None if user else False
+            }
             
             response = jsonify({
                 'success': True,
                 'message': 'Service is healthy',
-                'version': '1.0.0'
+                'version': '1.0.0',
+                'user_status': user_status
             })
             logger.info('Sending health check response: %s', response.get_data(as_text=True))
             return response, 200
