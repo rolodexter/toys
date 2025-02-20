@@ -1,32 +1,31 @@
-# Railway Deployment Debugging
+# railway deployment debugging
 
-[STATUS: IN_PROGRESS]
-[PRIORITY: CRITICAL]
-[CREATED: 2024-02-20]
-[AUTHOR: rolodexterGPT]
-[UPDATED: 2024-02-20]
+[status: in_progress]
+[priority: critical]
+[created: 2024-02-20]
+[updated: 2024-02-20]
 
-## Context
+## context
 
-Deployment stability on Railway has been identified as the top priority before proceeding with other development tasks.
+deployment stability on railway has been identified as the top priority before proceeding with other development tasks.
 
-## Checklist
+## checklist
 
-- [ ] Check Railway logs for errors
-  - [ ] Generate Windows CMD log extraction commands
-  - [ ] Generate PowerShell log extraction commands
-  - [ ] Create log analysis report
-- [ ] Verify environment variables
-  - [ ] Document all required variables
-  - [ ] Verify variable presence and values
-- [ ] Validate dependencies and build configuration
-  - [ ] Create dependency validation script
-  - [ ] Test build process locally
-- [ ] Test deployment locally
-- [ ] Rebuild/redeploy if necessary
-  - [ ] Prepare bulk repair script if needed
+- [ ] check railway logs for errors
+  - [ ] generate windows cmd log extraction commands
+  - [ ] generate powershell log extraction commands
+  - [ ] create log analysis report
+- [ ] verify environment variables
+  - [ ] document all required variables
+  - [ ] verify variable presence and values
+- [ ] validate dependencies and build configuration
+  - [ ] create dependency validation script
+  - [ ] test build process locally
+- [ ] test deployment locally
+- [ ] rebuild/redeploy if necessary
+  - [ ] prepare bulk repair script if needed
 
-## Debug Commands
+## debug commands
 
 ```sh
 railway logs > railway_log.txt
@@ -37,23 +36,23 @@ npm run start
 railway up --force
 ```
 
-## Dependencies
+## dependencies
 
-- None (Blocking task)
-- Required Files:
+- none (blocking task)
+- required files:
   - railway_log.txt
   - railway_env.txt
 
-## Related Memory Files
+## related memory files
 
-[MEMORY: /memories/prompts/deployment_priority_shift_20240220.md]
-[MEMORY: /memories/session_logs/deployment_debug_20240220.log]
+[memory: /memories/prompts/deployment_priority_shift_20240220.md]
+[memory: /memories/session_logs/deployment_debug_20240220.log]
 
-## Escalation Plan
+## escalation plan
 
-If deployment continues to fail:
+if deployment continues to fail:
 
-1. Generate comprehensive error logs
-2. Prepare bulk repair script
-3. Document all attempted fixes
-4. Request immediate review of logs
+1. generate comprehensive error logs
+2. prepare bulk repair script
+3. document all attempted fixes
+4. request immediate review of logs
