@@ -10,14 +10,20 @@ ENV HUSKY=0
 
 # Install build dependencies and clean up in same layer
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 make g++ && \
-    npm install -g pnpm && \
-    apt-get clean && \
+    apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    git \
+    && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Install pnpm globally
+RUN npm install -g pnpm@latest
 
 # Install dependencies
 COPY web/package.json web/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 # Copy web files and build
 COPY web/ ./
@@ -31,9 +37,12 @@ WORKDIR /app
 # Install system dependencies and clean up in same layer
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential nodejs && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    build-essential \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy web build output
 COPY --from=web-builder /app/web/.next/standalone ./
