@@ -5,7 +5,7 @@ Flask application with authentication.
 import os
 import logging
 import sys
-from flask import Flask, jsonify
+from flask import Flask, jsonify, make_response
 from flask_cors import CORS
 
 # Configure logging to stdout
@@ -26,13 +26,17 @@ try:
     @app.route('/')
     def root():
         logger.info('Handling request to /')
-        return jsonify({'message': 'Welcome to the API'})
+        response = make_response(jsonify({'message': 'Welcome to the API'}))
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
     # Health check endpoint - must be first route
     @app.route('/health')
     def health():
         logger.info('Handling health check request')
-        return jsonify({'status': 'ok'})
+        response = make_response(jsonify({'status': 'ok'}))
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
     if __name__ == '__main__':
         port = int(os.environ.get('PORT', 3000))
