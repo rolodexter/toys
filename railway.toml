@@ -10,6 +10,8 @@ healthcheckTimeout = 300
 
 [variables]
 PORT = "8000"
+FLASK_APP = "api/app.py"
+PYTHONUNBUFFERED = "1"
 NODE_ENV = "production"
-HOSTNAME = "0.0.0.0"
-RAILWAY_PUBLIC_DOMAIN = "true"
+NEXT_TELEMETRY_DISABLED = "1"
+NEXT_PORT = "3000"
