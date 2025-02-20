@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "docker/Dockerfile"
 
 [deploy]
-startCommand = "nginx -g 'daemon off;'"
+startCommand = "/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
@@ -32,6 +32,7 @@ SERVICE_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
 APP_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
 APP_WEB_URL = "${RAILWAY_PUBLIC_DOMAIN}"
 FILES_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+PORT = "80"
 
 # Database Configuration
 DB_USERNAME = "${PGUSER}"
