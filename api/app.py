@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+# Health check endpoint - must be defined first
+@app.route('/health')
+def health():
+    return 'OK', 200
+
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-this')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
@@ -43,22 +48,6 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-@app.route('/health')
-def health():
-    try:
-        # Test database connection
-        db.session.execute('SELECT 1')
-        return jsonify({
-            'status': 'healthy',
-            'database': 'connected'
-        }), 200
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        return jsonify({
-            'status': 'unhealthy',
-            'error': str(e)
-        }), 500
 
 @app.route('/api/login', methods=['POST'])
 def login():
