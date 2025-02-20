@@ -1,4 +1,4 @@
-flask==3.1.0
+flask==3.0.2
 flask-compress==1.17
 flask-cors==4.0.0
 flask-login==0.6.3
@@ -6,7 +6,7 @@ flask-migrate==4.0.7
 flask-restful==0.3.10
 flask-sqlalchemy==3.1.1
 gevent==24.11.1
-gunicorn==23.0.0
+gunicorn==21.2.0
 python-dotenv==1.0.1
 redis==5.0.3
 sqlalchemy==2.0.29
