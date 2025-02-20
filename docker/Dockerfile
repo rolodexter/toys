@@ -106,6 +106,12 @@ COPY <<EOF /healthcheck.sh
 echo "=== Starting health check ==="
 echo "Date: $(date)"
 echo "Hostname: $(hostname)"
+echo "Working Directory: $(pwd)"
+echo "Python Version: $(python --version)"
+
+# Show environment
+echo "=== Environment Variables ==="
+env | sort
 
 # Show process status
 echo "=== Process Status ==="
@@ -115,25 +121,41 @@ free -h || echo "free command not available"
 echo "=== Disk Space ==="
 df -h
 
+# Show gunicorn logs if they exist
+echo "=== Gunicorn Logs ==="
+if [ -f /app/api/gunicorn.log ]; then
+    tail -n 50 /app/api/gunicorn.log
+else
+    echo "No gunicorn log file found"
+fi
+
+# Show application logs if they exist
+echo "=== Application Logs ==="
+for log in /app/api/logs/*.log; do
+    if [ -f "$log" ]; then
+        echo "=== $log ==="
+        tail -n 50 "$log"
+    fi
+done
+
 # Check if gunicorn is running
 echo "=== Checking gunicorn process ==="
 if ! pgrep -f "gunicorn"; then
     echo "ERROR: Gunicorn process not found"
-    echo "=== API Logs ==="
-    tail -n 100 /app/api/gunicorn.log
-    echo "=== Environment Variables ==="
-    env
+    echo "=== Python Processes ==="
+    pgrep -af python
     exit 1
 fi
 
 # Check if the API is responding
-echo "Checking API health..."
-if ! curl -f http://localhost:5001/health; then
-    echo "ERROR: API health check failed"
-    echo "=== API Logs ==="
-    tail -n 100 /app/api/gunicorn.log
-    echo "=== Environment Variables ==="
-    env
+echo "=== Checking API health ==="
+response=$(curl -s -w "\n%{http_code}" http://localhost:5001/health)
+status_code=$(echo "$response" | tail -n1)
+response_body=$(echo "$response" | head -n-1)
+
+if [ "$status_code" != "200" ]; then
+    echo "ERROR: API health check failed with status $status_code"
+    echo "Response: $response_body"
     exit 1
 fi
 
@@ -142,6 +164,30 @@ exit 0
 EOF
 
 RUN chmod +x /healthcheck.sh
+
+# Create startup script
+COPY <<EOF /start.sh
+#!/bin/bash
+set -e
+
+echo "=== Starting Dify API ==="
+echo "Date: $(date)"
+echo "Working Directory: $(pwd)"
+echo "Python Version: $(python --version)"
+
+# Activate virtual environment
+source /app/api/venv/bin/activate
+
+# Show environment
+echo "=== Environment Variables ==="
+env | sort
+
+# Start gunicorn with output
+echo "=== Starting Gunicorn ==="
+PYTHONPATH=/app/api exec gunicorn -c gunicorn_config.py app:app
+EOF
+
+RUN chmod +x /start.sh
 
 # Create required directories and set permissions
 RUN mkdir -p /app/api/instance /app/api/logs && \
@@ -154,5 +200,5 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=5 \
     CMD /healthcheck.sh
 
-# Start the API server with the virtual environment
-CMD ["/bin/bash", "-c", "source /app/api/venv/bin/activate && PYTHONPATH=/app/api exec gunicorn -c gunicorn_config.py app:app"]
+# Start the API server
+CMD ["/start.sh"]
