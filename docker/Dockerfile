@@ -1,6 +1,6 @@
 # Use the official Dify images
 FROM langgenius/dify-api:0.15.3 as api
-RUN ls -R /app > /image-contents.txt
+RUN pip freeze > /app/requirements.txt
 
 FROM langgenius/dify-web:0.15.3 as web
 
@@ -10,12 +10,9 @@ FROM nginx:alpine
 # Install dependencies
 RUN apk add --no-cache supervisor python3 py3-pip nodejs npm py3-virtualenv curl
 
-# Copy image contents for inspection
-COPY --from=api /image-contents.txt /tmp/image-contents.txt
-RUN cat /tmp/image-contents.txt
-
 # Copy the Dify API files first
 COPY --from=api /app /app/api
+COPY --from=api /app/requirements.txt /app/api/requirements.txt
 WORKDIR /app/api
 
 # Install poetry and dependencies
