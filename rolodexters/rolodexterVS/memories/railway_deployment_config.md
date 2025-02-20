@@ -7,51 +7,139 @@
 
 ## Services
 1. Main Application (toys)
-   ```
-   RAILWAY_PROJECT_ID=fe07eb00-ce47-4841-8f75-45a2d9018d4e
-   RAILWAY_ENVIRONMENT_ID=60693e13-f5c6-4879-bf31-dc01224d8753
-   RAILWAY_SERVICE_ID=4c91f505-14a4-4aaf-8922-103ca1e469b4
-   ```
+   - Serverless deployment
+   - Health check: /health
+   - Timeout: 300s
+   - Replicas: 1
 
 2. PostgreSQL (toys-postgres)
-   ```
-   DATABASE_URL=postgresql://postgres:cxwhLFWdYNokjpnBUdiNqfYKKdfvtxaI@postgres.railway.internal:5432/railway
-   PGHOST=postgres.railway.internal
-   PGPORT=5432
-   PGDATABASE=railway
-   PGUSER=postgres
-   ```
+   - Internal access via shared variables
+   - Connection pooling settings:
+     ```python
+     SQLALCHEMY_ENGINE_OPTIONS = {
+         'pool_size': 10,
+         'max_overflow': 20,
+         'pool_recycle': 300,
+         'pool_pre_ping': True,
+         'connect_args': {
+             'connect_timeout': 10,
+             'application_name': 'toys-app'
+         }
+     }
+     ```
 
 3. Redis (toys-redis)
+   - Internal access via shared variables
+   - SSL enabled
+   - Connection settings:
+     ```python
+     REDIS_CONFIG = {
+         'socket_timeout': 5,
+         'socket_connect_timeout': 5,
+         'retry_on_timeout': True,
+         'health_check_interval': 30,
+         'max_connections': 10,
+         'decode_responses': True
+     }
+     ```
+
+## Shared Variables
+1. Database Variables:
    ```
-   REDIS_URL=redis://default:aXYyjnAjWnEPOgmGIWefwmqRGOhlImDZ@redis.railway.internal:6379
-   REDISHOST=redis.railway.internal
-   REDISPORT=6379
-   REDISUSER=default
+   DATABASE_URL
+   DATABASE_PUBLIC_URL
+   PGHOST
+   PGPORT
+   PGDATABASE
+   PGUSER
+   PGPASSWORD
+   POSTGRES_DB
+   POSTGRES_USER
+   POSTGRES_PASSWORD
    ```
 
-## Important Configuration Files
-1. railway.toml - Main deployment configuration
-2. Dockerfile - Build configuration
-3. configs/database.py - Database settings
-4. configs/redis.py - Redis settings
-5. configs/app_config.py - Application settings
+2. Redis Variables:
+   ```
+   REDIS_URL
+   REDIS_PUBLIC_URL
+   REDISHOST
+   REDISPORT
+   REDISUSER
+   REDISPASSWORD
+   REDIS_AOF_ENABLED
+   REDIS_RDB_POLICY
+   ```
 
-## Deployment Settings
-- Serverless: Enabled
-- Health Check: /health
-- Timeout: 300s
-- Replicas: 1
-- Region: US West (California)
+3. Railway System Variables:
+   ```
+   RAILWAY_PROJECT_ID
+   RAILWAY_ENVIRONMENT_ID
+   RAILWAY_SERVICE_ID
+   RAILWAY_SERVICE_NAME
+   RAILWAY_PROJECT_NAME
+   RAILWAY_ENVIRONMENT_NAME
+   RAILWAY_PRIVATE_DOMAIN
+   RAILWAY_RUN_AS_ROOT
+   RAILWAY_RUN_UID
+   ```
 
-## Notes
-- All services use Railway's internal network for communication
-- SSL is enabled for Redis connections
+## Startup Configuration
+1. Process Management:
+   ```bash
+   # Start Next.js
+   cd /app && node server.js
+
+   # Start Flask
+   cd /app/api && gunicorn app:app --bind 0.0.0.0:$PORT --worker-class gevent
+   ```
+
+2. Health Check Logic:
+   - Check database connection
+   - Check Redis connection
+   - Return detailed status
+   - Log connection issues
+
+## Logging Configuration
+1. Flask Logging:
+   ```python
+   dictConfig({
+       'version': 1,
+       'formatters': {
+           'default': {
+               'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+           }
+       },
+       'handlers': {
+           'wsgi': {
+               'class': 'logging.StreamHandler',
+               'stream': 'ext://sys.stdout',
+               'formatter': 'default'
+           }
+       },
+       'root': {
+           'level': 'INFO',
+           'handlers': ['wsgi']
+       }
+   })
+   ```
+
+2. Start Script Logging:
+   - Process status monitoring
+   - File existence checks
+   - Environment variable logging
+   - Error handling with set -e
+
+## Important Notes
+- All services use Railway's internal network
+- SSL is required for Redis connections
 - PostgreSQL uses connection pooling
-- Environment variables are properly referenced between services
+- Health checks must pass for deployment
+- Logging is configured for debugging
+- Variables are shared across services
 
 ## User Preferences
 - User: Joe Maristela
-- Preferred Region: US West
+- Region: US West
 - GitHub Integration: Enabled
 - Auto-deploy: Enabled on main branch
+- Logging: Detailed for debugging

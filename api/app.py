@@ -1,9 +1,17 @@
+"""
+Main Flask application entry point.
+
+For deployment configuration details, see:
+- /rolodexters/rolodexterVS/tasks/in_progress/railway_deployment.md
+- /rolodexters/rolodexterVS/memories/railway_deployment_config.md
+"""
+
 import os
 import sys
 import logging
 from logging.config import dictConfig
 
-# Configure logging
+# Configure logging as specified in /rolodexters/rolodexterVS/memories/railway_deployment_config.md
 dictConfig({
     'version': 1,
     'formatters': {
@@ -37,9 +45,7 @@ if is_db_command():
     app = create_migrations_app()
 else:
     try:
-        # It seems that JetBrains Python debugger does not work well with gevent,
-        # so we need to disable gevent in debug mode.
-        # If you are using debugpy and set GEVENT_SUPPORT=True, you can debug with gevent.
+        # Gevent configuration as specified in deployment task
         if (flask_debug := os.environ.get("FLASK_DEBUG", "0")) and flask_debug.lower() in {"false", "0", "no"}:
             logger.info("Initializing gevent patches...")
             from gevent import monkey  # type: ignore
@@ -62,7 +68,8 @@ else:
         celery = app.extensions["celery"]
         logger.info("Flask application created successfully")
 
-        # Health check endpoint
+        # Health check endpoint required by Railway deployment
+        # See /rolodexters/rolodexterVS/tasks/in_progress/railway_deployment.md
         app.route('/health')(health_check)
         logger.info("Health check endpoint registered")
 
