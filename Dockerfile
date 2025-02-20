@@ -16,20 +16,25 @@ RUN apt-get update && \
 COPY api/requirements.txt ./api/
 RUN pip install --no-cache-dir -r api/requirements.txt
 
-# Create necessary directories
+# Create api directory structure
 RUN mkdir -p /app/api/templates
 
-# Copy API code and templates
-COPY api/*.py ./api/
-COPY api/templates/* ./api/templates/
+# Copy files with explicit paths
+COPY api/app.py /app/api/
+COPY api/models.py /app/api/
+COPY api/templates/index.html /app/api/templates/
+COPY api/templates/register.html /app/api/templates/
 COPY start.sh /start.sh
 
 # Set working directory to api folder
 WORKDIR /app/api
 
-# Verify templates exist
-RUN ls -la /app/api/templates/
+# Verify files exist
+RUN ls -la /app/api && \
+    ls -la /app/api/templates && \
+    chmod +x /start.sh
 
-RUN chmod +x /start.sh
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
 
 CMD ["/start.sh"]

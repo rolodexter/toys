@@ -2,8 +2,9 @@
 Flask application with authentication.
 """
 
-from flask import Flask, jsonify, make_response, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for, session
 from flask_cors import CORS
+from flask_oauthlib.client import OAuth
 from models import db, User
 import os
 import logging
@@ -45,6 +46,20 @@ def create_app():
     # Initialize database
     db.init_app(app)
 
+    # Initialize OAuth
+    oauth = OAuth(app)
+    github = oauth.remote_app(
+        'github',
+        consumer_key=os.environ.get('GITHUB_CLIENT_ID'),
+        consumer_secret=os.environ.get('GITHUB_CLIENT_SECRET'),
+        request_token_params={'scope': 'user:email'},
+        base_url='https://api.github.com/',
+        request_token_url=None,
+        access_token_method='POST',
+        access_token_url='https://github.com/login/oauth/access_token',
+        authorize_url='https://github.com/login/oauth/authorize'
+    )
+
     # Create tables
     with app.app_context():
         try:
@@ -52,24 +67,73 @@ def create_app():
             logger.info('Database tables created successfully')
         except Exception as e:
             logger.error(f'Error creating database tables: {str(e)}')
-            # Don't fail on database error, let health check handle it
             pass
 
     logger.info('Flask app initialized with database')
 
-    # Root endpoint
     @app.route('/')
     def root():
         logger.info('Handling request to /')
         return render_template('index.html')
 
-    # Registration endpoint
     @app.route('/register')
     def register_page():
         logger.info('Handling request to /register')
         return render_template('register.html')
 
-    # API endpoint for registration
+    @app.route('/login/github')
+    def github_login():
+        logger.info('Initiating GitHub login')
+        return github.authorize(callback=url_for('github_authorized', _external=True))
+
+    @app.route('/login/github/authorized')
+    def github_authorized():
+        logger.info('Handling GitHub authorization callback')
+        resp = github.authorized_response()
+        if resp is None or resp.get('access_token') is None:
+            logger.warning('GitHub authorization failed')
+            return redirect(url_for('root', error='GitHub authorization failed'))
+
+        session['github_token'] = (resp['access_token'], '')
+        
+        # Get user info from GitHub
+        github_user = github.get('user').data
+        github_emails = github.get('user/emails').data
+        primary_email = next(email['email'] for email in github_emails if email['primary'])
+
+        # Check if user exists
+        user = User.query.filter_by(github_id=github_user['id']).first()
+        if not user:
+            # Create new user
+            username = github_user['login']
+            base_username = username
+            counter = 1
+            while User.query.filter_by(username=username).first():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            user = User(
+                username=username,
+                email=primary_email,
+                github_id=github_user['id'],
+                github_username=github_user['login'],
+                github_access_token=resp['access_token']
+            )
+            db.session.add(user)
+            db.session.commit()
+            logger.info(f'Created new user from GitHub: {username}')
+        else:
+            # Update existing user
+            user.github_access_token = resp['access_token']
+            db.session.commit()
+            logger.info(f'Updated existing GitHub user: {user.username}')
+
+        return redirect(url_for('root', message='Successfully signed in with GitHub'))
+
+    @github.tokengetter
+    def get_github_oauth_token():
+        return session.get('github_token')
+
     @app.route('/api/register', methods=['POST'])
     def register():
         logger.info('Handling registration request')
@@ -98,7 +162,6 @@ def create_app():
             db.session.rollback()
             return jsonify({'error': 'Registration failed'}), 500
 
-    # API endpoint for login
     @app.route('/api/login', methods=['POST'])
     def login():
         logger.info('Handling login request')
@@ -119,7 +182,6 @@ def create_app():
             logger.error(f'Error during login: {str(e)}')
             return jsonify({'error': 'Login failed'}), 500
 
-    # API endpoint
     @app.route('/api')
     def api_root():
         logger.info('Handling request to /api')
@@ -130,7 +192,6 @@ def create_app():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # Health check endpoint
     @app.route('/health')
     def health():
         logger.info('Handling health check request')
