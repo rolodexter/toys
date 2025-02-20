@@ -12,8 +12,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
-COPY api/requirements.txt ./api/
-RUN pip install --no-cache-dir -r api/requirements.txt
+COPY api/requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Create necessary directories and copy files
 RUN mkdir -p /app/api/templates
@@ -33,5 +33,5 @@ ENV FLASK_ENV=production
 # Expose port
 EXPOSE 8080
 
-# Run the application with gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--log-level", "debug", "--timeout", "0", "app:app"]
+# Run gunicorn directly
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--log-level", "debug", "--timeout", "0", "--chdir", "/app/api", "app:app"]
