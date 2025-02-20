@@ -24,5 +24,6 @@ RUN chmod +x /start.sh
 
 # Set environment variables
 ENV PORT=3000
+ENV NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
 
 CMD ["/start.sh"]
