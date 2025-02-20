@@ -24,14 +24,36 @@ INDEX_TEMPLATE = """
 <html>
 <head>
     <title>Rolodexter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2ea44f;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+        }
+        .button:hover {
+            background-color: #2c974b;
+        }
+    </style>
 </head>
 <body>
     <h1>Welcome to Rolodexter</h1>
     {% if current_user.is_authenticated %}
         <p>Hello, {{ current_user.username }}!</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
     {% else %}
-        <p>Please <a href="{{ url_for('login') }}">login</a> to continue.</p>
+        <p>Please log in to continue.</p>
+        <a href="{{ url_for('login') }}" class="button">Login</a>
     {% endif %}
 </body>
 </html>
@@ -42,12 +64,45 @@ LOGIN_TEMPLATE = """
 <html>
 <head>
     <title>Login - Rolodexter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .github-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #24292e;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+        }
+        .github-button:hover {
+            background-color: #2f363d;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #6e7681;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+        }
+        .back-button:hover {
+            background-color: #7d8590;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
-    <a href="{{ url_for('github_login') }}">Login with GitHub</a>
+    <h1>Login to Rolodexter</h1>
+    <a href="{{ url_for('github_login') }}" class="github-button">Login with GitHub</a>
     <br>
-    <a href="{{ url_for('home') }}">Back to Home</a>
+    <a href="{{ url_for('home') }}" class="back-button">Back to Home</a>
 </body>
 </html>
 """
@@ -90,6 +145,10 @@ def create_app():
     if not os.environ.get('GITHUB_CLIENT_ID') or not os.environ.get('GITHUB_CLIENT_SECRET'):
         logger.error('GitHub OAuth credentials not set')
         raise ValueError('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be set')
+
+    # Get the deployment URL from Railway
+    deployment_url = os.environ.get('RAILWAY_STATIC_URL', 'http://localhost:8080')
+    logger.info('Using deployment URL: %s', deployment_url)
     
     github = oauth.register(
         name='github',
@@ -142,7 +201,9 @@ def create_app():
         """Initiate GitHub OAuth flow"""
         logger.info('GitHub login request received')
         try:
-            redirect_uri = url_for('github_authorized', _external=True)
+            # Always use HTTPS for the callback URL in production
+            redirect_uri = url_for('github_authorized', _external=True, _scheme='https')
+            logger.info('Using redirect URI: %s', redirect_uri)
             return github.authorize_redirect(redirect_uri)
         except Exception as e:
             logger.error('Error initiating GitHub OAuth: %s', str(e), exc_info=True)
