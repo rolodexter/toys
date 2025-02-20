@@ -46,11 +46,12 @@ RUN apt-get update && \
     build-essential \
     curl \
     libpq-dev \
+    postgresql-server-dev-all \
     python3-dev \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy web build output
 COPY --from=web-builder /app/web/.next/standalone ./
