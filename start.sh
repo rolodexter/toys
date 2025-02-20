@@ -17,30 +17,9 @@ ls -la /app/api
 
 # Calculate ports
 NEXT_PORT=$PORT
-FLASK_PORT=5000
+FLASK_PORT=$PORT  # Use the same port as specified by Railway
 
-# Start Next.js
-echo "Starting Next.js on port $NEXT_PORT..."
-cd /app
-if [ ! -f "server.js" ]; then
-    echo "Error: server.js not found in /app"
-    ls -la /app
-    exit 1
-fi
-
-export PORT=$NEXT_PORT
-node server.js &
-NEXT_PID=$!
-echo "Next.js started with PID $NEXT_PID"
-
-# Wait a moment to ensure Next.js is starting
-sleep 2
-if ! kill -0 $NEXT_PID 2>/dev/null; then
-    echo "Error: Next.js failed to start"
-    exit 1
-fi
-
-# Start Flask
+# Start Flask first since it handles the health check
 echo "Starting Flask on port $FLASK_PORT..."
 cd /app/api
 if [ ! -f "app.py" ]; then
@@ -49,17 +28,6 @@ if [ ! -f "app.py" ]; then
     exit 1
 fi
 
-# Check if required environment variables are set
-if [ -z "$DATABASE_URL" ]; then
-    echo "Error: DATABASE_URL is not set"
-    exit 1
-fi
-if [ -z "$REDIS_URL" ]; then
-    echo "Error: REDIS_URL is not set"
-    exit 1
-fi
-
-export PORT=$FLASK_PORT
 export FLASK_ENV=production
 export FLASK_DEBUG=0
 
@@ -82,32 +50,52 @@ if ! kill -0 $FLASK_PID 2>/dev/null; then
     exit 1
 fi
 
+# Start Next.js
+echo "Starting Next.js..."
+cd /app
+if [ ! -f "server.js" ]; then
+    echo "Error: server.js not found in /app"
+    ls -la /app
+    exit 1
+fi
+
+# Start Next.js without binding to a port since Flask will handle all requests
+export PORT=0
+node server.js &
+NEXT_PID=$!
+echo "Next.js started with PID $NEXT_PID"
+
+# Wait a moment to ensure Next.js is starting
+sleep 2
+if ! kill -0 $NEXT_PID 2>/dev/null; then
+    echo "Error: Next.js failed to start"
+    exit 1
+fi
+
 # Handle shutdown
 trap 'echo "Shutting down..."; kill $NEXT_PID $FLASK_PID' SIGTERM
 
 # Monitor processes and check health
 while true; do
-    # Check Next.js
-    if ! kill -0 $NEXT_PID 2>/dev/null; then
-        echo "Next.js process died"
-        exit 1
-    fi
-    
     # Check Flask
     if ! kill -0 $FLASK_PID 2>/dev/null; then
         echo "Flask process died"
         exit 1
     fi
     
-    # Check if services are responding
-    echo "Checking Next.js health..."
-    if ! curl -s http://localhost:$NEXT_PORT/_next/static 2>/dev/null; then
-        echo "Warning: Next.js not responding"
+    # Check Next.js
+    if ! kill -0 $NEXT_PID 2>/dev/null; then
+        echo "Next.js process died"
+        exit 1
     fi
     
+    # Check Flask health endpoint
     echo "Checking Flask health..."
-    if ! curl -s http://localhost:$FLASK_PORT/health 2>/dev/null; then
-        echo "Warning: Flask not responding"
+    HEALTH_CHECK=$(curl -s http://localhost:$FLASK_PORT/health || echo "failed")
+    if [ "$HEALTH_CHECK" = "failed" ]; then
+        echo "Warning: Health check failed"
+    else
+        echo "Health check response: $HEALTH_CHECK"
     fi
     
     sleep 5
