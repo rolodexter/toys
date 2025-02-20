@@ -1,0 +1,20 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "docker/Dockerfile"
+
+[deploy]
+startCommand = "docker-compose up -d"
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[env]
+RAILWAY_DOCKERFILE_PATH = "docker/Dockerfile"
+VECTOR_DB_TYPE = "pgvector"
+DEPLOY_ENV = "PRODUCTION"
+CONSOLE_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+CONSOLE_WEB_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+SERVICE_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+APP_API_URL = "${RAILWAY_PUBLIC_DOMAIN}"
+APP_WEB_URL = "${RAILWAY_PUBLIC_DOMAIN}"
