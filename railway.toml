@@ -1,6 +1,6 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "Dockerfile.web"
 
 [deploy]
 numReplicas = 1
@@ -8,24 +8,15 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 healthcheckPath = "/health"
 healthcheckTimeout = 300
-startCommand = "/start.sh"
 serverless = true
 
 [variables]
 # Service configuration
-PORT = "8000"
-FLASK_APP = "api/app.py"
+PORT = "8080"
+FLASK_APP = "/app/api/app.py"
 PYTHONUNBUFFERED = "1"
-NODE_ENV = "production"
-NEXT_TELEMETRY_DISABLED = "1"
-NEXT_PORT = "3000"
-
-# App URLs using Railway domain
-CONSOLE_API_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{RAILWAY_PROJECT_NAME}}.railway.app"
-CONSOLE_WEB_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{RAILWAY_PROJECT_NAME}}.railway.app"
-SERVICE_API_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{RAILWAY_PROJECT_NAME}}.railway.app"
-APP_WEB_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{RAILWAY_PROJECT_NAME}}.railway.app"
-FILES_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{RAILWAY_PROJECT_NAME}}.railway.app"
+FLASK_ENV = "production"
+PYTHONPATH = "/app"
 
 # Using shared variables for database configuration
 DATABASE_URL = "${{DATABASE_URL}}"
