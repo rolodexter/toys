@@ -6,10 +6,20 @@ WORKDIR /app/web
 # Set build environment variables
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV HUSKY=0
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
 COPY web/package.json web/pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install --frozen-lockfile --ignore-scripts
+RUN npm install -g pnpm && \
+    pnpm config set node-linker hoisted && \
+    pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy web files and build
 COPY web/ ./
@@ -23,6 +33,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy web build output
