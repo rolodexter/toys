@@ -218,10 +218,13 @@ def create_app():
             password = request.form.get('password')
             
             logger.info('Login attempt for username: %s', username)
+            logger.info('Password length: %d', len(password))
+            
             user = User.query.filter_by(username=username).first()
             
             if user:
-                logger.info('User found in database')
+                logger.info('User found in database: %s', user)
+                logger.info('User password hash: %s', user.password_hash)
                 if user.check_password(password):
                     logger.info('Password check successful')
                     login_user(user)
@@ -311,7 +314,9 @@ def create_app():
             user = User.query.filter_by(username=username).first()
             if user:
                 logger.info('Setup: User %s already exists, updating password', username)
+                logger.info('Old password hash: %s', user.password_hash)
                 user.set_password(password)
+                logger.info('New password hash: %s', user.password_hash)
                 db.session.commit()
                 return jsonify({'message': f'Updated password for user {username}'})
             
@@ -319,6 +324,7 @@ def create_app():
             logger.info('Setup: Creating new user %s', username)
             user = User(username=username)
             user.set_password(password)
+            logger.info('Initial password hash: %s', user.password_hash)
             db.session.add(user)
             db.session.commit()
             
@@ -362,6 +368,27 @@ def create_app():
                 'success': False,
                 'message': str(e)
             }), 500
+
+    @app.route('/check-user')
+    def check_user():
+        """Check if test user exists"""
+        try:
+            username = "rolodexter"
+            user = User.query.filter_by(username=username).first()
+            if user:
+                return jsonify({
+                    'exists': True,
+                    'username': user.username,
+                    'created_at': user.created_at.isoformat(),
+                    'has_password': user.password_hash is not None
+                })
+            return jsonify({
+                'exists': False,
+                'message': 'User not found'
+            })
+        except Exception as e:
+            logger.error('Error checking user: %s', str(e), exc_info=True)
+            return jsonify({'error': str(e)}), 500
 
     @app.cli.command("create-user")
     def create_user():
