@@ -2,14 +2,14 @@
 Redis configuration for Railway deployment.
 
 For detailed configuration and deployment information, see:
-- /rolodexters/rolodexterVS/tasks/in_progress/railway_deployment.md
-- /rolodexters/rolodexterVS/memories/railway_deployment_config.md
+- /rolodexters/rolodextervs/tasks/in_progress/railway_deployment.md
+- /rolodexters/rolodextervs/memories/railway_deployment_config.md
 """
 
 import os
 
 # Default values for Railway Redis service
-# See /rolodexters/rolodexterVS/memories/railway_deployment_config.md for details
+# See /rolodexters/rolodextervs/memories/railway_deployment_config.md for details
 DEFAULT_REDIS_HOST = 'redis.railway.internal'
 DEFAULT_REDIS_PORT = 6379
 DEFAULT_REDIS_DB = 0
@@ -33,7 +33,7 @@ if not REDIS_URL:
     REDIS_URL = f'{scheme}://{auth_part}{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
 
 # Redis client configuration
-# Connection settings as specified in /rolodexters/rolodexterVS/memories/railway_deployment_config.md
+# Connection settings as specified in /rolodexters/rolodextervs/memories/railway_deployment_config.md
 REDIS_CONFIG = {
     'url': REDIS_URL,
     'host': REDIS_HOST,
