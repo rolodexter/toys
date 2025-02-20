@@ -1,9 +1,9 @@
 [build]
-builder = "nixpacks"
-buildCommand = "cd web && npm i -g pnpm && pnpm install && pnpm run build && cd ../api && python -m pip install --upgrade pip && pip install -r requirements.txt"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "cd api && gunicorn --worker-class gevent -b 0.0.0.0:$PORT app:app"
+startCommand = "cd api && gunicorn app:app --bind 0.0.0.0:$PORT --worker-class gevent"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
