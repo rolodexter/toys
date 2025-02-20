@@ -53,16 +53,36 @@ RUN apt-get update \
 COPY --from=api-base /app/api /app/api
 
 # Set environment variables
-ENV FLASK_APP=app.py
-ENV EDITION=SELF_HOSTED
-ENV DEPLOY_ENV=PRODUCTION
-ENV CONSOLE_API_URL=http://127.0.0.1:5001
-ENV CONSOLE_WEB_URL=http://127.0.0.1:3000
-ENV SERVICE_API_URL=http://127.0.0.1:5001
-ENV APP_WEB_URL=http://127.0.0.1:3000
-ENV TZ=UTC
-ENV PYTHONPATH=/app/api
-ENV PATH="/app/api/venv/bin:$PATH"
+ENV FLASK_APP=app.py \
+    EDITION=SELF_HOSTED \
+    DEPLOY_ENV=PRODUCTION \
+    CONSOLE_API_URL=http://127.0.0.1:5001 \
+    CONSOLE_WEB_URL=http://127.0.0.1:3000 \
+    SERVICE_API_URL=http://127.0.0.1:5001 \
+    APP_WEB_URL=http://127.0.0.1:3000 \
+    TZ=UTC \
+    PYTHONPATH=/app/api \
+    PATH="/app/api/venv/bin:$PATH" \
+    FLASK_DEBUG=0 \
+    FLASK_ENV=production \
+    SECRET_KEY=your-secret-key \
+    SQLALCHEMY_DATABASE_URI=sqlite:///db.sqlite \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_DB=0 \
+    REDIS_USERNAME="" \
+    REDIS_PASSWORD="" \
+    REDIS_USE_SSL=false \
+    SESSION_TYPE=filesystem \
+    SESSION_PERMANENT=true \
+    SESSION_USE_SIGNER=true \
+    OAUTH_REDIRECT_PATH=/console/api/oauth/authorize \
+    OAUTH_REDIRECT_INDEX_PATH=/console/oauth/callback \
+    CONSOLE_URL=http://127.0.0.1:3000 \
+    API_URL=http://127.0.0.1:5001 \
+    APP_URL=http://127.0.0.1:3000 \
+    DEFAULT_LANG=en-US \
+    CLEAN_UNFINISHED_INIT_MODEL_TASK=true
 
 # Create a health check script
 COPY <<EOF /healthcheck.sh
@@ -86,6 +106,8 @@ if ! curl -f http://localhost:5001/health; then
     echo "ERROR: API health check failed"
     echo "=== API Logs ==="
     tail -n 100 /app/api/gunicorn.log
+    echo "=== Environment Variables ==="
+    env
     exit 1
 fi
 
@@ -95,6 +117,9 @@ EOF
 
 RUN chmod +x /healthcheck.sh
 
+# Create required directories
+RUN mkdir -p /app/api/instance /app/api/logs
+
 # Expose API port
 EXPOSE 5001
 
@@ -102,5 +127,5 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=5 \
     CMD /healthcheck.sh
 
-# Start the API server
-CMD ["gunicorn", "-c", "gunicorn_config.py", "--log-file", "/app/api/gunicorn.log", "app:app"]
+# Start the API server with the virtual environment
+CMD ["/bin/bash", "-c", "source /app/api/venv/bin/activate && gunicorn -c gunicorn_config.py --log-file /app/api/gunicorn.log app:app"]
