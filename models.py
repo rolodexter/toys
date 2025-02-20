@@ -15,7 +15,7 @@ class User(UserMixin, db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(db.String(80), unique=True, nullable=False)
     email: Mapped[Optional[str]] = mapped_column(db.String(120), unique=True, nullable=True)
-    password_hash: Mapped[Optional[str]] = mapped_column(db.String(128), nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(db.String(512), nullable=True)
     github_id: Mapped[Optional[int]] = mapped_column(unique=True, nullable=True)
     github_login: Mapped[Optional[str]] = mapped_column(db.String(80), nullable=True)
     github_access_token: Mapped[Optional[str]] = mapped_column(db.String(200), nullable=True)

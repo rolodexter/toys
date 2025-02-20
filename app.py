@@ -217,14 +217,23 @@ def create_app():
             username = request.form.get('username')
             password = request.form.get('password')
             
+            logger.info('Login attempt for username: %s', username)
             user = User.query.filter_by(username=username).first()
-            if user and user.check_password(password):
-                login_user(user)
-                flash('Logged in successfully.')
-                return redirect(url_for('home'))
+            
+            if user:
+                logger.info('User found in database')
+                if user.check_password(password):
+                    logger.info('Password check successful')
+                    login_user(user)
+                    flash('Logged in successfully.')
+                    return redirect(url_for('home'))
+                else:
+                    logger.warning('Invalid password for user: %s', username)
             else:
-                flash('Invalid username or password')
-                return render_template_string(LOGIN_TEMPLATE)
+                logger.warning('User not found: %s', username)
+            
+            flash('Invalid username or password')
+            return render_template_string(LOGIN_TEMPLATE)
         
         return render_template_string(LOGIN_TEMPLATE)
 
@@ -301,9 +310,13 @@ def create_app():
             # Check if user already exists
             user = User.query.filter_by(username=username).first()
             if user:
-                return jsonify({'message': f'User {username} already exists'})
+                logger.info('Setup: User %s already exists, updating password', username)
+                user.set_password(password)
+                db.session.commit()
+                return jsonify({'message': f'Updated password for user {username}'})
             
             # Create new user
+            logger.info('Setup: Creating new user %s', username)
             user = User(username=username)
             user.set_password(password)
             db.session.add(user)
@@ -312,6 +325,19 @@ def create_app():
             return jsonify({'message': f'Created user {username}'})
         except Exception as e:
             logger.error('Error in setup: %s', str(e), exc_info=True)
+            return jsonify({'error': str(e)}), 500
+
+    @app.route('/reset')
+    def reset():
+        """Reset the database"""
+        try:
+            logger.info('Dropping all tables')
+            db.drop_all()
+            logger.info('Creating all tables')
+            db.create_all()
+            return jsonify({'message': 'Database reset successful'})
+        except Exception as e:
+            logger.error('Error resetting database: %s', str(e), exc_info=True)
             return jsonify({'error': str(e)}), 500
 
     @app.route('/health')
