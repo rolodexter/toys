@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Rolodexter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-96">
+        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Create Account</h1>
+        <form id="registerForm" class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="username" name="username" 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required>
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="email" name="email" 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required>
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required>
+            </div>
+            <div>
+                <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required>
+            </div>
+            <button type="submit" 
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Register
+            </button>
+        </form>
+        <div class="mt-4 text-center">
+            <a href="/" class="text-sm text-blue-600 hover:text-blue-800">Already have an account? Sign in</a>
+        </div>
+        <div id="message" class="mt-4 text-center text-sm"></div>
+    </div>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = document.getElementById('message');
+            
+            // Basic validation
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            if (password !== confirmPassword) {
+                message.textContent = 'Passwords do not match';
+                message.className = 'mt-4 text-center text-sm text-red-600';
+                return;
+            }
+
+            message.textContent = 'Creating account...';
+            message.className = 'mt-4 text-center text-sm text-blue-600';
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        email: document.getElementById('email').value,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    message.textContent = 'Account created successfully! Redirecting...';
+                    message.className = 'mt-4 text-center text-sm text-green-600';
+                    setTimeout(() => window.location.href = '/', 2000);
+                } else {
+                    message.textContent = data.error || 'Registration failed';
+                    message.className = 'mt-4 text-center text-sm text-red-600';
+                }
+            } catch (error) {
+                message.textContent = 'An error occurred. Please try again.';
+                message.className = 'mt-4 text-center text-sm text-red-600';
+            }
+        });
+    </script>
+</body>
+</html>
