@@ -1,5 +1,7 @@
 # Use the official Dify images
 FROM langgenius/dify-api:0.15.3 as api
+RUN ls -la /app > /image-contents.txt
+
 FROM langgenius/dify-web:0.15.3 as web
 
 # Final stage
@@ -8,14 +10,19 @@ FROM nginx:alpine
 # Install dependencies
 RUN apk add --no-cache supervisor python3 py3-pip nodejs npm py3-virtualenv
 
+# Copy image contents for inspection
+COPY --from=api /image-contents.txt /tmp/image-contents.txt
+RUN cat /tmp/image-contents.txt
+
 # Copy the Dify API files first
 COPY --from=api /app /app/api
 WORKDIR /app/api
 
 # Set up Python environment and install requirements
+RUN find /app/api -name "requirements.txt" -type f
 RUN python3 -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install --no-cache-dir -r /app/api/requirements.txt
+    pip install --no-cache-dir -r /app/api/api/requirements.txt
 
 ENV PATH="/app/api/venv/bin:$PATH"
 
