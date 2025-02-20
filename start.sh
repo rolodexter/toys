@@ -1,24 +1,34 @@
 #!/bin/bash
 set -e
 
-cd /app/api || exit 1
-echo "Starting Flask on port $PORT"
+cd /app || exit 1
+echo "Starting services..."
 
 # Default to port 3000 if not set
 export PORT=${PORT:-3000}
 
 # Initialize database
+cd /app/api
 echo "Initializing database..."
 python -c "
 from app import db
 db.create_all()
 "
 
-# Start Flask with gunicorn
-exec gunicorn app:app \
-    --bind 0.0.0.0:$PORT \
+# Start Flask in background
+echo "Starting Flask API..."
+gunicorn app:app \
+    --bind 127.0.0.1:5000 \
     --workers 1 \
     --log-level debug \
     --timeout 300 \
     --access-logfile - \
-    --error-logfile -
+    --error-logfile - &
+
+# Wait for Flask to start
+sleep 2
+
+# Start Next.js
+cd /app
+echo "Starting Next.js..."
+exec node server.js
