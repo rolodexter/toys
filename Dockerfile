@@ -45,6 +45,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    libpq-dev \
+    python3-dev \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -58,6 +60,7 @@ COPY --from=web-builder /app/web/public ./public
 # Copy API requirements and install Python packages
 COPY api/requirements.txt ./api/
 RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir wheel setuptools && \
     pip install --no-cache-dir -r api/requirements.txt
 
 # Copy API files
