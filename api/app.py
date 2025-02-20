@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     # Initialize Flask app
-    app = Flask(__name__)
+    template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+    app = Flask(__name__, template_folder=template_dir)
     CORS(app)
 
     # Set secret key

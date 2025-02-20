@@ -16,15 +16,13 @@ RUN apt-get update && \
 COPY api/requirements.txt ./api/
 RUN pip install --no-cache-dir -r api/requirements.txt
 
-# Copy API code and start script
+# Copy API code, templates, and start script
 COPY api/ ./api/
 COPY start.sh /start.sh
+
+# Set working directory to api folder
+WORKDIR /app/api
+
 RUN chmod +x /start.sh
-
-# Set environment variables
-ENV PORT=8080
-
-# Expose port 8080
-EXPOSE 8080
 
 CMD ["/start.sh"]
