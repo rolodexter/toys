@@ -24,13 +24,15 @@ COPY --from=langgenius/dify-api:0.15.3 /app /app/api
 # Set up Python environment
 RUN python -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install --upgrade pip setuptools wheel
+    pip install --upgrade pip setuptools wheel tomli
 
 # Install dependencies from pyproject.toml
 COPY pyproject.toml /app/api/
 RUN . /app/api/venv/bin/activate && \
-    pip install -r <(python -c 'import tomli; print("\n".join(tomli.load(open("pyproject.toml", "rb"))["project"]["dependencies"]))') && \
-    pip install nltk tiktoken
+    python -c 'import tomli; print("\n".join(tomli.load(open("pyproject.toml", "rb"))["project"]["dependencies"]))' > requirements.txt && \
+    pip install -r requirements.txt && \
+    pip install nltk tiktoken && \
+    rm requirements.txt
 
 # Download NLTK data and set up tiktoken
 RUN . /app/api/venv/bin/activate && \
