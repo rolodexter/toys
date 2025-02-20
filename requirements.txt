@@ -1,2 +1,7 @@
 flask==3.0.2
 gunicorn==21.2.0
+flask-sqlalchemy==3.1.1
+psycopg2-binary==2.9.9
+Flask-OAuthlib==0.9.6
+requests==2.31.0
+flask-cors==4.0.0
