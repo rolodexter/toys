@@ -7,6 +7,8 @@ WORKDIR /app/web
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV HUSKY=0
+ENV HUSKY_SKIP_INSTALL=1
+ENV NEXT_SHARP_PATH=/tmp/node_modules/sharp
 
 # Install build dependencies and clean up in same layer
 RUN apt-get update && \
@@ -23,7 +25,11 @@ RUN npm install -g pnpm@latest
 
 # Install dependencies
 COPY web/package.json web/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prefer-offline
+RUN pnpm config set enable-pre-post-scripts false && \
+    pnpm config set ignore-scripts true && \
+    pnpm install --frozen-lockfile --prod && \
+    pnpm install -D sharp esbuild && \
+    pnpm rebuild sharp
 
 # Copy web files and build
 COPY web/ ./
