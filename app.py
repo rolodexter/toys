@@ -72,17 +72,28 @@ LOGIN_TEMPLATE = """
             padding: 20px;
             text-align: center;
         }
-        .github-button {
+        .form-group {
+            margin: 15px 0;
+        }
+        input[type="text"], input[type="password"] {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .login-button {
             display: inline-block;
             padding: 10px 20px;
-            background-color: #24292e;
+            background-color: #2ea44f;
             color: white;
             text-decoration: none;
+            border: none;
             border-radius: 6px;
             margin: 10px;
+            cursor: pointer;
         }
-        .github-button:hover {
-            background-color: #2f363d;
+        .login-button:hover {
+            background-color: #2c974b;
         }
         .back-button {
             display: inline-block;
@@ -96,12 +107,32 @@ LOGIN_TEMPLATE = """
         .back-button:hover {
             background-color: #7d8590;
         }
+        .error {
+            color: #dc3545;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Login to Rolodexter</h1>
-    <a href="{{ url_for('github_login') }}" class="github-button">Login with GitHub</a>
-    <br>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="error">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+            <input type="text" name="username" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+            <input type="password" name="password" placeholder="Password" required>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="login-button">Login</button>
+        </div>
+    </form>
     <a href="{{ url_for('home') }}" class="back-button">Back to Home</a>
 </body>
 </html>
@@ -178,15 +209,24 @@ def create_app():
             logger.error('Error rendering home page: %s', str(e), exc_info=True)
             return 'Internal Server Error', 500
 
-    @app.route('/login')
+    @app.route('/login', methods=['GET', 'POST'])
     def login():
         """Login page endpoint"""
         logger.info('Login page request received')
-        try:
-            return render_template_string(LOGIN_TEMPLATE)
-        except Exception as e:
-            logger.error('Error rendering login page: %s', str(e), exc_info=True)
-            return 'Internal Server Error', 500
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            user = User.query.filter_by(username=username).first()
+            if user and user.check_password(password):
+                login_user(user)
+                flash('Logged in successfully.')
+                return redirect(url_for('home'))
+            else:
+                flash('Invalid username or password')
+                return render_template_string(LOGIN_TEMPLATE)
+        
+        return render_template_string(LOGIN_TEMPLATE)
 
     @app.route('/logout')
     @login_required
@@ -203,7 +243,10 @@ def create_app():
         try:
             # Always use HTTPS for the callback URL in production
             redirect_uri = url_for('github_authorized', _external=True, _scheme='https')
-            logger.info('Using redirect URI: %s', redirect_uri)
+            # Log the full URL for debugging
+            logger.info('Full application URL: %s', request.url)
+            logger.info('Generated redirect URI: %s', redirect_uri)
+            logger.info('GitHub client ID: %s', os.environ.get('GITHUB_CLIENT_ID', 'Not set'))
             return github.authorize_redirect(redirect_uri)
         except Exception as e:
             logger.error('Error initiating GitHub OAuth: %s', str(e), exc_info=True)
@@ -270,6 +313,25 @@ def create_app():
                 'success': False,
                 'message': str(e)
             }), 500
+
+    @app.cli.command("create-user")
+    def create_user():
+        """Create a test user"""
+        username = "rolodexter"
+        password = "asdfasdf"
+        
+        # Check if user already exists
+        user = User.query.filter_by(username=username).first()
+        if user:
+            print(f"User {username} already exists")
+            return
+        
+        # Create new user
+        user = User(username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        print(f"Created user {username}")
 
     # Create database tables
     with app.app_context():
