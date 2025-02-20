@@ -14,6 +14,19 @@ const withMDX = require('@next/mdx')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/:path*`
+      },
+      {
+        source: '/health',
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/health`
+      }
+    ]
+  },
   webpack: (config, { dev, isServer }) => {
     config.plugins.push(codeInspectorPlugin({ bundler: 'webpack' }))
     return config
@@ -44,7 +57,6 @@ const nextConfig = {
       },
     ]
   },
-  output: 'standalone',
 }
 
 module.exports = withMDX(nextConfig)
