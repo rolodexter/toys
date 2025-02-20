@@ -8,18 +8,16 @@ FROM nginx:alpine
 # Install dependencies
 RUN apk add --no-cache supervisor python3 py3-pip nodejs npm py3-virtualenv curl
 
-# Install poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
 # Copy the Dify API files first
 COPY --from=api /app /app/api
 WORKDIR /app/api
 
-# Set up Python environment and install requirements
+# Install poetry and dependencies
 RUN python3 -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
     pip install poetry && \
     poetry config virtualenvs.create false && \
+    cd /app/api && \
     poetry install --no-root
 
 ENV PATH="/app/api/venv/bin:$PATH"
