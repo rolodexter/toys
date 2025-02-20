@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Rolodexter</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 h-screen flex items-center justify-center">
     <div class="bg-white p-8 rounded-lg shadow-md w-96">
-        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Welcome</h1>
+        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Welcome Back</h1>
         <form id="loginForm" class="space-y-4">
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
@@ -27,6 +27,9 @@
                 Sign in
             </button>
         </form>
+        <div class="mt-4 text-center">
+            <a href="/register" class="text-sm text-blue-600 hover:text-blue-800">Need an account? Register here</a>
+        </div>
         <div id="message" class="mt-4 text-center text-sm"></div>
     </div>
     <script>
@@ -36,11 +39,32 @@
             message.textContent = 'Logging in...';
             message.className = 'mt-4 text-center text-sm text-blue-600';
             
-            // For now, just show a success message
-            setTimeout(() => {
-                message.textContent = 'Login functionality coming soon!';
-                message.className = 'mt-4 text-center text-sm text-green-600';
-            }, 1000);
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    message.textContent = 'Login successful! Redirecting...';
+                    message.className = 'mt-4 text-center text-sm text-green-600';
+                    setTimeout(() => window.location.href = '/dashboard', 2000);
+                } else {
+                    message.textContent = data.error || 'Login failed';
+                    message.className = 'mt-4 text-center text-sm text-red-600';
+                }
+            } catch (error) {
+                message.textContent = 'An error occurred. Please try again.';
+                message.className = 'mt-4 text-center text-sm text-red-600';
+            }
         });
     </script>
 </body>
