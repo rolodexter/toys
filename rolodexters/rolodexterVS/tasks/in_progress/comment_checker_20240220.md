@@ -3,7 +3,7 @@
 [STATUS: IN_PROGRESS]
 [PRIORITY: HIGH]
 [CREATED: 2024-02-20]
-[AUTHOR: rolodexterGPT]
+[AUTHOR: rolodextergpt]
 [UPDATED: 2024-02-20]
 
 ## Context
