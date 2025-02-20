@@ -11,6 +11,11 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+# Root endpoint
+@app.route('/')
+def root():
+    return jsonify({'message': 'Welcome to the API'})
+
 # Health check endpoint - must be first route
 @app.route('/health')
 def health():
