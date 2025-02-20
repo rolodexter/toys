@@ -21,7 +21,7 @@ WORKDIR /app/api
 # Install poetry and dependencies
 RUN python3 -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install -r /app/api/api/requirements.txt
+    pip install -r /app/api/requirements.txt
 
 ENV PATH="/app/api/venv/bin:$PATH"
 
