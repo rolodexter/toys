@@ -8,6 +8,7 @@ from models import db, User
 import os
 import logging
 import sys
+from urllib.parse import quote_plus
 
 # Configure logging to stdout
 logging.basicConfig(
@@ -17,17 +18,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-try:
+def create_app():
     # Initialize Flask app
     app = Flask(__name__)
     CORS(app)
 
+    # Set secret key
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-please-change')
+
     # Configure PostgreSQL database
-    postgres_host = os.environ.get('POSTGRES_HOST', 'localhost')
-    postgres_port = os.environ.get('POSTGRES_PORT', '5432')
-    postgres_db = os.environ.get('POSTGRES_DB', 'railway')
-    postgres_user = os.environ.get('POSTGRES_USER', 'postgres')
-    postgres_password = os.environ.get('POSTGRES_PASSWORD', '')
+    postgres_host = os.environ.get('PGHOST', 'localhost')
+    postgres_port = os.environ.get('PGPORT', '5432')
+    postgres_db = os.environ.get('PGDATABASE', 'railway')
+    postgres_user = os.environ.get('PGUSER', 'postgres')
+    postgres_password = quote_plus(os.environ.get('PGPASSWORD', ''))
 
     database_url = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}:{postgres_port}/{postgres_db}"
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
@@ -43,6 +47,8 @@ try:
             logger.info('Database tables created successfully')
         except Exception as e:
             logger.error(f'Error creating database tables: {str(e)}')
+            # Don't fail on database error, let health check handle it
+            pass
 
     logger.info('Flask app initialized with database')
 
@@ -139,11 +145,12 @@ try:
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    if __name__ == '__main__':
-        # Railway uses port 8080 internally
-        port = int(os.environ.get('PORT', 8080))
-        logger.info(f'Starting Flask app on port {port}')
-        app.run(host='0.0.0.0', port=port)
+    return app
 
-except Exception as e:
-    logger.error(f'Error during app initialization: {str(e)}', exc_info=True)
+# Create the application instance
+app = create_app()
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))
+    logger.info(f'Starting Flask app on port {port}')
+    app.run(host='0.0.0.0', port=port)
