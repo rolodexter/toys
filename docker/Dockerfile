@@ -1,6 +1,6 @@
 # Use the official Dify images
 FROM langgenius/dify-api:0.15.3 as api
-RUN pip freeze > /app/requirements.txt
+RUN pip freeze | grep -v kaleido > /app/requirements.txt
 
 FROM langgenius/dify-web:0.15.3 as web
 
@@ -18,7 +18,8 @@ WORKDIR /app/api
 # Install poetry and dependencies
 RUN python3 -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install -r /app/api/requirements.txt
+    pip install -r /app/api/requirements.txt && \
+    pip install kaleido==0.2.1 --no-deps
 
 ENV PATH="/app/api/venv/bin:$PATH"
 
