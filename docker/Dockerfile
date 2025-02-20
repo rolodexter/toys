@@ -21,47 +21,14 @@ RUN apt-get update \
 # Copy Dify API files
 COPY --from=langgenius/dify-api:0.15.3 /app /app/api
 
+# Copy requirements file
+COPY docker/requirements.txt /app/api/requirements.txt
+
 # Set up Python environment and install dependencies
 RUN python -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
     pip install --upgrade pip setuptools wheel && \
-    pip install \
-    flask==3.0.2 \
-    flask-login==0.6.3 \
-    flask-migrate==4.0.7 \
-    flask-restful==0.3.10 \
-    flask-sqlalchemy==3.1.1 \
-    sqlalchemy==2.0.29 \
-    psycopg2-binary==2.9.9 \
-    redis==5.0.1 \
-    celery==5.3.6 \
-    gunicorn==21.2.0 \
-    gevent==24.2.1 \
-    authlib==1.3.0 \
-    pyjwt==2.8.0 \
-    cryptography==42.0.2 \
-    python-dotenv==1.0.1 \
-    openai==1.12.0 \
-    tiktoken==0.6.0 \
-    langchain==0.1.6 \
-    langchain-openai==0.0.5 \
-    langchain-community==0.0.19 \
-    langfuse==2.51.5 \
-    unstructured==0.12.3 \
-    nltk==3.8.1 \
-    numpy==1.26.4 \
-    pandas==2.2.0 \
-    beautifulsoup4==4.12.3 \
-    python-magic==0.4.27 \
-    pydantic==2.6.1 \
-    pydantic-settings==2.1.0 \
-    flask-compress==1.14 \
-    flask-cors==4.0.0 \
-    flask-limiter==3.5.0 \
-    flask-session==0.6.0 \
-    flask-smorest==0.42.3 \
-    flask-socketio==5.3.6 \
-    flask-wtf==1.2.1
+    pip install -r requirements.txt
 
 # Download NLTK data and set up tiktoken
 RUN . /app/api/venv/bin/activate && \
