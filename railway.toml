@@ -3,12 +3,13 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-configAsCode = true
-configPath = "railway"
+numReplicas = 1
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 healthcheckPath = "/health"
 healthcheckTimeout = 300
+startCommand = "/start.sh"
+serverless = true
 
 [variables]
 PORT = "8000"
