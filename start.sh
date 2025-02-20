@@ -1,26 +1,38 @@
 #!/bin/bash
 set -e
 
+echo "Starting application..."
 echo "Current directory: $(pwd)"
-echo "Listing contents:"
+echo "Directory contents:"
 ls -la
 
-echo "Python version:"
+echo "Checking Python environment:"
+which python
 python --version
+echo "PYTHONPATH: $PYTHONPATH"
 
 echo "Checking for required files:"
+echo "Checking /app/api/app.py..."
 if [ ! -f "/app/api/app.py" ]; then
     echo "ERROR: /app/api/app.py not found!"
+    ls -la /app/api/
     exit 1
 fi
 
+echo "Checking /app/api/templates..."
 if [ ! -d "/app/api/templates" ]; then
     echo "ERROR: /app/api/templates directory not found!"
+    ls -la /app/api/
     exit 1
 fi
 
 echo "Templates directory contents:"
 ls -la /app/api/templates/
+
+echo "Environment variables:"
+echo "PORT: $PORT"
+echo "FLASK_APP: $FLASK_APP"
+echo "FLASK_ENV: $FLASK_ENV"
 
 # Railway uses port 8080 internally
 PORT=${PORT:-8080}
@@ -37,5 +49,4 @@ exec gunicorn \
     --access-logfile - \
     --error-logfile - \
     --capture-output \
-    --preload \
     app:app

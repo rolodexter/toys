@@ -20,10 +20,10 @@ RUN pip install -r requirements.txt
 RUN mkdir -p /app/api/templates
 
 # Copy application files
-COPY api/app.py /app/api/
-COPY api/models.py /app/api/
-COPY api/templates/index.html /app/api/templates/
-COPY api/templates/register.html /app/api/templates/
+COPY app.py /app/api/app.py
+COPY api/models.py /app/api/models.py
+COPY api/templates/index.html /app/api/templates/index.html
+COPY api/templates/register.html /app/api/templates/register.html
 
 # Copy and setup start script
 COPY start.sh /app/start.sh
@@ -34,9 +34,10 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 ENV FLASK_APP=/app/api/app.py
 ENV FLASK_ENV=production
+ENV PYTHONPATH=/app
 
 # Expose port
 EXPOSE 8080
 
-# Use CMD instead of ENTRYPOINT for more flexibility
-CMD ["/bin/bash", "/app/start.sh"]
+# Start the application
+CMD ["bash", "/app/start.sh"]
