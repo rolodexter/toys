@@ -14,9 +14,15 @@ COPY api/templates templates/
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
 
 # Expose port
 EXPOSE 8080
 
-# Run the application
-CMD ["python", "-m", "gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--log-level", "debug", "app:app"]
+# Run the application with Flask for development, Gunicorn for production
+CMD if [ "$FLASK_ENV" = "development" ]; then \
+        python -m flask run --host=0.0.0.0 --port=8080; \
+    else \
+        gunicorn --bind 0.0.0.0:8080 --workers 1 --log-level debug app:app; \
+    fi
