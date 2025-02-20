@@ -4,6 +4,7 @@ Flask application with GitHub OAuth integration
 from flask import Flask, jsonify, redirect, url_for, flash, render_template_string, request, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from authlib.integrations.flask_client import OAuth
+from sqlalchemy import text
 import logging
 import sys
 import os
@@ -191,8 +192,9 @@ def create_app():
         """Health check endpoint"""
         logger.info('Health check request received')
         try:
-            # Test database connection
-            db.session.execute('SELECT 1')
+            # Test database connection using SQLAlchemy 2.0 syntax
+            db.session.execute(text('SELECT 1'))
+            db.session.commit()
             
             response = jsonify({
                 'success': True,
