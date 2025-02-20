@@ -1,6 +1,6 @@
 # Use the official Dify images
 FROM langgenius/dify-api:0.15.3 as api
-RUN pip freeze | grep -v kaleido > /app/requirements.txt
+RUN pip freeze | grep -v "kaleido\|milvus-lite" > /app/requirements.txt
 
 FROM langgenius/dify-web:0.15.3 as web
 
@@ -19,7 +19,8 @@ WORKDIR /app/api
 RUN python3 -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
     pip install -r /app/api/requirements.txt && \
-    pip install kaleido==0.2.1 --no-deps
+    pip install kaleido==0.2.1 --no-deps && \
+    pip install pymilvus>=2.0.0
 
 ENV PATH="/app/api/venv/bin:$PATH"
 
