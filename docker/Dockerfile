@@ -1,5 +1,7 @@
 # Use the official Dify images
 FROM langgenius/dify-api:0.15.3 as api
+RUN ls -R /app > /image-contents.txt
+
 FROM langgenius/dify-web:0.15.3 as web
 
 # Final stage
@@ -8,6 +10,10 @@ FROM nginx:alpine
 # Install dependencies
 RUN apk add --no-cache supervisor python3 py3-pip nodejs npm py3-virtualenv curl
 
+# Copy image contents for inspection
+COPY --from=api /image-contents.txt /tmp/image-contents.txt
+RUN cat /tmp/image-contents.txt
+
 # Copy the Dify API files first
 COPY --from=api /app /app/api
 WORKDIR /app/api
@@ -15,10 +21,7 @@ WORKDIR /app/api
 # Install poetry and dependencies
 RUN python3 -m venv /app/api/venv && \
     . /app/api/venv/bin/activate && \
-    pip install poetry && \
-    poetry config virtualenvs.create false && \
-    cd /app/api && \
-    poetry install --no-root
+    pip install -r /app/api/api/requirements.txt
 
 ENV PATH="/app/api/venv/bin:$PATH"
 
