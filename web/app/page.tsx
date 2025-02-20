@@ -1,7 +1,14 @@
-import { redirect } from 'next/navigation'
+'use client'
 
-const Home = async () => {
-  redirect('/signin')
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
+export default function Home() {
+  const router = useRouter()
+
+  useEffect(() => {
+    router.push('/signin')
+  }, [router])
+
+  return null
 }
-
-export default Home
