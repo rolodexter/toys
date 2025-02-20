@@ -8,7 +8,7 @@ FROM langgenius/dify-web:0.15.3 as web
 FROM nginx:alpine
 
 # Install dependencies
-RUN apk add --no-cache supervisor python3 py3-pip nodejs npm py3-virtualenv curl
+RUN apk add --no-cache supervisor python3 py3-pip nodejs npm py3-virtualenv curl gcc musl-dev rust cargo
 
 # Copy the Dify API files first
 COPY --from=api /app /app/api
