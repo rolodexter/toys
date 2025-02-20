@@ -12,8 +12,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Create api directory and copy files there
-RUN mkdir -p /app/api
-WORKDIR /app/api
+RUN mkdir -p /app/api/templates
 
 # Copy requirements and install
 COPY requirements.txt .
@@ -21,11 +20,12 @@ RUN pip install -r requirements.txt
 
 # Copy application code
 COPY app.py .
-COPY api/models.py .
-COPY api/templates templates/
+COPY api/models.py api/models.py
+COPY api/templates/index.html api/templates/
+COPY api/templates/register.html api/templates/
 
 # Copy start script
-COPY start.sh /app/start.sh
+COPY start.sh .
 RUN chmod +x /app/start.sh
 
 # Set environment variables
@@ -38,4 +38,4 @@ ENV FLASK_ENV=production
 EXPOSE 8080
 
 # Use start.sh as entrypoint
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["./start.sh"]
