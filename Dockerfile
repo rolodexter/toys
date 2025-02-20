@@ -1,5 +1,6 @@
 FROM python:3.12-slim
 
+# Set working directory
 WORKDIR /app
 
 # Install system dependencies
@@ -19,7 +20,7 @@ RUN pip install -r requirements.txt
 RUN mkdir -p /app/api/templates
 
 # Copy application files
-COPY app.py /app/api/
+COPY api/app.py /app/api/
 COPY api/models.py /app/api/
 COPY api/templates/index.html /app/api/templates/
 COPY api/templates/register.html /app/api/templates/
@@ -37,5 +38,5 @@ ENV FLASK_ENV=production
 # Expose port
 EXPOSE 8080
 
-# Set the entrypoint
-CMD ["/app/start.sh"]
+# Use CMD instead of ENTRYPOINT for more flexibility
+CMD ["/bin/bash", "/app/start.sh"]
