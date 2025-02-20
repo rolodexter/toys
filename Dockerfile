@@ -9,7 +9,16 @@ COPY app.py .
 
 ENV PORT=8080
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8080
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--log-level", "debug", "app:app"]
+CMD ["gunicorn", \
+    "--bind", "0.0.0.0:8080", \
+    "--workers", "1", \
+    "--log-level", "debug", \
+    "--capture-output", \
+    "--access-logfile", "-", \
+    "--error-logfile", "-", \
+    "--timeout", "300", \
+    "app:app"]
