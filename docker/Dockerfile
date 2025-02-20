@@ -5,13 +5,17 @@ FROM langgenius/dify-web:0.15.3 as web
 # Final stage
 FROM nginx:alpine
 
-# Install supervisor
-RUN apk add --no-cache supervisor python3 py3-pip nodejs npm
+# Install dependencies
+RUN apk add --no-cache supervisor python3 py3-pip python3-venv nodejs npm
 
 # Copy the Dify API files
 COPY --from=api /app /app/api
 WORKDIR /app/api
-RUN pip install -r requirements.txt
+
+# Create and activate virtual environment
+RUN python3 -m venv /app/api/venv
+ENV PATH="/app/api/venv/bin:$PATH"
+RUN . /app/api/venv/bin/activate && pip install -r requirements.txt
 
 # Copy the Dify web files
 COPY --from=web /app /app/web
@@ -29,7 +33,7 @@ user=root
 
 [program:api]
 directory=/app/api
-command=python3 app.py
+command=/app/api/venv/bin/python app.py
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
