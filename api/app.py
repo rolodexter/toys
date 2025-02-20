@@ -10,7 +10,7 @@ from flask_cors import CORS
 
 # Configure logging to stdout
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=sys.stdout
 )
@@ -26,7 +26,10 @@ try:
     @app.route('/')
     def root():
         logger.info('Handling request to /')
-        response = make_response(jsonify({'message': 'Welcome to the API'}))
+        response = make_response(jsonify({
+            'message': 'Welcome to the API',
+            'status': 'running'
+        }))
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -39,9 +42,10 @@ try:
         return response
 
     if __name__ == '__main__':
-        port = int(os.environ.get('PORT', 3000))
+        # Railway uses port 8080 internally
+        port = int(os.environ.get('PORT', 8080))
         logger.info(f'Starting Flask app on port {port}')
-        app.run(host='0.0.0.0', port=port, debug=True)
+        app.run(host='0.0.0.0', port=port)
 
 except Exception as e:
     logger.error(f'Error during app initialization: {str(e)}', exc_info=True)

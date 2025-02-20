@@ -22,6 +22,9 @@ COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
 # Set environment variables
-ENV PORT=3000
+ENV PORT=8080
+
+# Expose port 8080
+EXPOSE 8080
 
 CMD ["/start.sh"]
