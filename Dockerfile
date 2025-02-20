@@ -40,18 +40,30 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
+# Set environment variables for PostgreSQL
+ENV PATH="/usr/lib/postgresql/16/bin:${PATH}" \
+    PG_MAJOR=16
+
 # Install system dependencies and clean up in same layer
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     libpq-dev \
-    postgresql-server-dev-all \
+    postgresql-server-dev-${PG_MAJOR} \
     python3-dev \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    gcc \
+    g++ \
+    git \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    # Verify pg_config is available
+    pg_config --version
 
 # Copy web build output
 COPY --from=web-builder /app/web/.next/standalone ./

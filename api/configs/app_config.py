@@ -4,6 +4,7 @@ from typing import Any
 from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
+from .database import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_ENGINE_OPTIONS, SQLALCHEMY_TRACK_MODIFICATIONS
 from .deploy import DeploymentConfig
 from .enterprise import EnterpriseFeatureConfig
 from .extra import ExtraServiceConfig
@@ -65,6 +66,11 @@ class DifyConfig(
     # **Before using, please contact business@dify.ai by email to inquire about licensing matters.**
     EnterpriseFeatureConfig,
 ):
+    # Database settings
+    SQLALCHEMY_DATABASE_URI: str = SQLALCHEMY_DATABASE_URI
+    SQLALCHEMY_TRACK_MODIFICATIONS: bool = SQLALCHEMY_TRACK_MODIFICATIONS
+    SQLALCHEMY_ENGINE_OPTIONS: dict = SQLALCHEMY_ENGINE_OPTIONS
+
     model_config = SettingsConfigDict(
         # read from dotenv format config file
         env_file=".env",
