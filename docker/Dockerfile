@@ -75,6 +75,8 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
+startretries=10
+startsecs=30
 priority=1
 
 [program:web]
@@ -86,6 +88,8 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
+startretries=10
+startsecs=30
 priority=2
 
 [program:nginx]
@@ -96,6 +100,8 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
+startretries=10
+startsecs=10
 priority=3
 EOF
 
@@ -104,17 +110,38 @@ COPY <<EOF /healthcheck.sh
 #!/bin/bash
 set -e
 
-# Wait for services to be ready
-sleep 10
+echo "Starting health check..."
+
+# Wait longer for services to be ready
+echo "Waiting for services to start..."
+sleep 30
 
 # Check if supervisor is running
-supervisorctl status all
+echo "Checking supervisor status..."
+supervisorctl status all || {
+    echo "Supervisor check failed"
+    exit 1
+}
 
 # Check if the API is responding
-curl -f http://localhost:5001/health || exit 1
+echo "Checking API health..."
+if ! curl -f http://localhost:5001/health; then
+    echo "API health check failed"
+    echo "Checking supervisor logs..."
+    supervisorctl tail api
+    exit 1
+fi
 
 # Check if the web interface is accessible
-curl -f http://localhost:3000 || exit 1
+echo "Checking web interface..."
+if ! curl -f http://localhost:3000; then
+    echo "Web interface check failed"
+    echo "Checking supervisor logs..."
+    supervisorctl tail web
+    exit 1
+fi
+
+echo "All health checks passed!"
 EOF
 
 RUN chmod +x /healthcheck.sh
@@ -134,7 +161,7 @@ ENV PYTHONPATH=/app/api
 EXPOSE 80 5001 3000
 
 # Add health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=5 \
     CMD /healthcheck.sh
 
 # Start supervisor which will start all services
