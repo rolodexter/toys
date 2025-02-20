@@ -16,12 +16,19 @@ RUN apt-get update && \
 COPY api/requirements.txt ./api/
 RUN pip install --no-cache-dir -r api/requirements.txt
 
-# Copy API code, templates, and start script
-COPY api/ ./api/
+# Create necessary directories
+RUN mkdir -p /app/api/templates
+
+# Copy API code and templates
+COPY api/*.py ./api/
+COPY api/templates/* ./api/templates/
 COPY start.sh /start.sh
 
 # Set working directory to api folder
 WORKDIR /app/api
+
+# Verify templates exist
+RUN ls -la /app/api/templates/
 
 RUN chmod +x /start.sh
 

@@ -21,6 +21,10 @@ logger = logging.getLogger(__name__)
 def create_app():
     # Initialize Flask app
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+    logger.info(f'Template directory: {template_dir}')
+    logger.info(f'Template directory exists: {os.path.exists(template_dir)}')
+    logger.info(f'Template directory contents: {os.listdir(template_dir) if os.path.exists(template_dir) else "directory not found"}')
+    
     app = Flask(__name__, template_folder=template_dir)
     CORS(app)
 
