@@ -3,71 +3,41 @@ FROM python:3.12-slim-bookworm AS base
 
 WORKDIR /app/api
 
-# Install Poetry
-ENV POETRY_VERSION=2.0.1
-RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
-
-# Configure Poetry
-ENV POETRY_CACHE_DIR=/tmp/poetry_cache
-ENV POETRY_NO_INTERACTION=1
-ENV POETRY_VIRTUALENVS_IN_PROJECT=true
-ENV POETRY_VIRTUALENVS_CREATE=true
-ENV POETRY_REQUESTS_TIMEOUT=15
-
-FROM base AS packages
-
+# Install system dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
-
-# Copy Dify API files and install dependencies
-COPY --from=langgenius/dify-api:0.15.3 /app /app/api
-RUN cd /app/api && poetry install --sync --no-cache --no-root
-
-# production stage
-FROM base AS production
-
-ENV FLASK_APP=app.py
-ENV EDITION=SELF_HOSTED
-ENV DEPLOY_ENV=PRODUCTION
-ENV CONSOLE_API_URL=http://127.0.0.1:5001
-ENV CONSOLE_WEB_URL=http://127.0.0.1:3000
-ENV SERVICE_API_URL=http://127.0.0.1:5001
-ENV APP_WEB_URL=http://127.0.0.1:3000
-
-EXPOSE 5001
-
-# set timezone
-ENV TZ=UTC
-
-WORKDIR /app/api
-
-RUN \
-    apt-get update \
-    # Install dependencies
     && apt-get install -y --no-install-recommends \
-        # basic environment
-        curl nodejs libgmp-dev libmpfr-dev libmpc-dev \
-        # For Security
-        expat libldap-2.5-0 perl libsqlite3-0 zlib1g \
-        # install a chinese font to support the use of tools like matplotlib
-        fonts-noto-cjk \
-        # install a package to improve the accuracy of guessing mime type and file extension
-        media-types \
-        # install libmagic to support the use of python-magic guess MIMETYPE
-        libmagic1 \
+    gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev \
+    curl nodejs libgmp-dev libmpfr-dev libmpc-dev \
+    expat libldap-2.5-0 perl libsqlite3-0 zlib1g \
+    fonts-noto-cjk media-types libmagic1 \
+    git make cmake pkg-config \
+    libjpeg-dev libpng-dev libtiff-dev \
+    libxml2-dev libxslt-dev \
+    libssl-dev libffi-dev \
+    postgresql postgresql-contrib libpq-dev \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python environment and packages
-ENV VIRTUAL_ENV=/app/api/.venv
-COPY --from=packages ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+# Copy Dify API files
+COPY --from=langgenius/dify-api:0.15.3 /app /app/api
 
-# Download nltk data
-RUN python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"
+# Set up Python environment
+RUN python -m venv /app/api/venv && \
+    . /app/api/venv/bin/activate && \
+    pip install --upgrade pip setuptools wheel
+
+# Install dependencies from pyproject.toml
+COPY pyproject.toml /app/api/
+RUN . /app/api/venv/bin/activate && \
+    pip install -r <(python -c 'import tomli; print("\n".join(tomli.load(open("pyproject.toml", "rb"))["project"]["dependencies"]))') && \
+    pip install nltk tiktoken
+
+# Download NLTK data and set up tiktoken
+RUN . /app/api/venv/bin/activate && \
+    python -c "import nltk; nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')" && \
+    python -c "import tiktoken; tiktoken.encoding_for_model('gpt2')"
 
 ENV TIKTOKEN_CACHE_DIR=/app/api/.tiktoken_cache
-RUN python -c "import tiktoken; tiktoken.encoding_for_model('gpt2')"
 
 FROM langgenius/dify-web:0.15.3 as web
 
@@ -78,7 +48,7 @@ FROM nginx:alpine
 RUN apk add --no-cache supervisor python3 py3-pip nodejs npm
 
 # Copy the Dify API files
-COPY --from=production /app/api /app/api
+COPY --from=base /app/api /app/api
 WORKDIR /app/api
 
 # Copy the Dify web files
