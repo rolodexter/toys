@@ -1,13 +1,15 @@
 #!/bin/bash
 set -e
 
-cd /app/api || exit 1
+cd /app || exit 1
 echo "Starting services..."
 
+# On Railway, we only need to run Flask on $PORT
 # Default to port 3000 if not set
 export PORT=${PORT:-3000}
 
 # Initialize database
+cd /app/api
 echo "Initializing database..."
 python -c "
 from app import db
