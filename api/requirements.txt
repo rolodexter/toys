@@ -2,14 +2,5 @@ flask==3.0.2
 gunicorn==21.2.0
 flask-sqlalchemy==3.1.1
 flask-login==0.6.3
-psycopg2-binary==2.9.6
-redis==5.0.3
-python-dotenv==1.0.1
-flask-compress==1.17
 flask-cors==4.0.0
-flask-migrate==4.0.7
-flask-restful==0.3.10
-gevent==24.11.1
-sqlalchemy==2.0.29
-openai==1.61.0
-tiktoken==0.8.0
+psycopg2-binary==2.9.6
