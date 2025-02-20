@@ -5,7 +5,7 @@ Flask application with authentication.
 from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for, session
 from flask_cors import CORS
 from flask_oauthlib.client import OAuth
-from api.models import db, User
+from models import db, User
 import os
 import logging
 import sys
@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Initialize Flask app
-template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'api', 'templates'))
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
 logger.info(f'Template directory: {template_dir}')
 logger.info(f'Template directory exists: {os.path.exists(template_dir)}')
 logger.info(f'Template directory contents: {os.listdir(template_dir) if os.path.exists(template_dir) else "directory not found"}')
