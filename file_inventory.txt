@@ -1,0 +1,208 @@
+Repository File Inventory
+------------------------
+
+/.gitattributes
+/.gitignore
+/AUTHORS
+/CONTRIBUTING_CN.md
+/CONTRIBUTING_JA.md
+/CONTRIBUTING_VI.md
+/CONTRIBUTING.md
+/LICENSE
+/Makefile
+/README_AR.md
+/README_CN.md
+/README_ES.md
+/README_FR.md
+/README_JA.md
+/README_KL.md
+/README_KR.md
+/README_PT.md
+/README_SI.md
+/README_TR.md
+/README_VI.md
+/README.md
+
+/.devcontainer/
+  devcontainer.json
+  Dockerfile
+  noop.txt
+  post_create_command.sh
+  post_start_command.sh
+  README.md
+
+/.github/
+  /actions/setup-poetry/action.yml
+  /CODE_OF_CONDUCT.md
+  /DISCUSSION_TEMPLATE/
+    general.yml
+    help.yml
+    suggestion.yml
+  /ISSUE_TEMPLATE/
+    bug_report.yml
+    config.yml
+    document_issue.yml
+    feature_request.yml
+    translation_issue.yml
+  /linters/
+    .hadolint.yaml
+    .isort.cfg
+    .yaml-lint.yml
+  /pull_request_template.md
+  /workflows/
+    api-tests.yml
+    build-push.yml
+    db-migration-test.yml
+    deploy-dev.yml
+    docker-build.yml
+    expose_service_ports.sh
+    stale.yml
+    style.yml
+    tool-test-sdks.yaml
+    translate-i18n-base-on-english.yml
+    vdb-tests.yml
+
+/api/
+  .dockerignore
+  .env.example
+  .ruff.toml
+  app.py
+  app_factory.py
+  commands.py
+  /configs/
+    app_config.py
+    /deploy/
+      __init__.py
+    /enterprise/
+      __init__.py
+    /extra/
+      notion_config.py
+      sentry_config.py
+      __init__.py
+    /feature/
+      hosted_service/__init__.py
+      __init__.py
+    /middleware/
+      cache/redis_config.py
+      storage/
+        aliyun_oss_storage_config.py
+        amazon_s3_storage_config.py
+        azure_blob_storage_config.py
+        baidu_obs_storage_config.py
+        google_cloud_storage_config.py
+        huawei_obs_storage_config.py
+        oci_storage_config.py
+        opendal_storage_config.py
+        supabase_storage_config.py
+
+/dev/
+  /pytest/
+    pytest_all_tests.sh
+    pytest_artifacts.sh
+    pytest_config_tests.py
+    pytest_model_runtime.sh
+    pytest_tools.sh
+    pytest_unit_tests.sh
+    pytest_vdb.sh
+    pytest_workflow.sh
+  reformat
+  sync-poetry
+  update-poetry
+
+/docker/
+  .env.example
+  /certbot/
+    docker-entrypoint.sh
+    README.md
+    update-cert.template.txt
+  /couchbase-server/
+    Dockerfile
+    init-cbserver.sh
+  docker-compose-template.yaml
+  docker-compose.middleware.yaml
+  docker-compose.yaml
+  /elasticsearch/
+    docker-entrypoint.sh
+  generate_docker_compose
+  middleware.env.example
+  /nginx/
+    /conf.d/default.conf.template
+    docker-entrypoint.sh
+    https.conf.template
+    nginx.conf.template
+    proxy.conf.template
+    /ssl/.gitkeep
+  README.md
+  /ssrf_proxy/
+    docker-entrypoint.sh
+    squid.conf.template
+  /startupscripts/
+    init.sh
+    init_user.script
+  /tidb/
+    /config/pd.toml
+
+/sdks/
+  README.md
+  /nodejs-client/
+    .gitignore
+    index.d.ts
+    index.js
+    index.test.js
+    package.json
+    README.md
+  /php-client/
+    dify-client.php
+    README.md
+  /python-client/
+    build.sh
+    /dify_client/
+      client.py
+      __init__.py
+    LICENSE
+    MANIFEST.in
+    README.md
+    setup.py
+    /tests/
+      test_client.py
+      __init__.py
+
+/web/
+  .dockerignore
+  .editorconfig
+  .env.example
+  .gitignore
+  /.husky/
+    pre-commit
+  /.storybook/
+    main.ts
+    preview.tsx
+    storybook.css
+  /app/
+    /(commonLayout)/
+      /app/
+        /(appDetailLayout)/
+          layout.tsx
+          /[appId]/
+            /annotations/
+              page.tsx
+            /configuration/
+              page.tsx
+            /develop/
+              page.tsx
+            layout.tsx
+            /logs/
+              page.tsx
+            /overview/
+              cardView.tsx
+              chartView.tsx
+              page.tsx
+              /tracing/
+                config-button.tsx
+                config-popup.tsx
+                config.ts
+                field.tsx
+                panel.tsx
+                provider-config-modal.tsx
+                provider-panel.tsx
+                tracing-icon.tsx 

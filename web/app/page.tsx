@@ -1,18 +1,8 @@
-import Link from 'next/link'
-import Loading from '@/app/components/base/loading'
-
-const Home = async () => {
+export default function Home() {
   return (
-    <div className="flex flex-col justify-center min-h-screen py-12 sm:px-6 lg:px-8">
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Loading type='area' />
-        <div className="mt-10 text-center">
-          <Link href='/apps'>🚀</Link>
-        </div>
-      </div>
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <h1 className="text-4xl font-bold">Welcome to the App</h1>
+      <p className="mt-4">Getting started with Next.js and Flask</p>
+    </main>
   )
 }
-
-export default Home
