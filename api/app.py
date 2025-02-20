@@ -5,7 +5,7 @@ Flask application with authentication.
 import os
 import logging
 import sys
-from flask import Flask, jsonify, make_response
+from flask import Flask, jsonify, make_response, render_template
 from flask_cors import CORS
 
 # Configure logging to stdout
@@ -26,6 +26,12 @@ try:
     @app.route('/')
     def root():
         logger.info('Handling request to /')
+        return render_template('index.html')
+
+    # API endpoint
+    @app.route('/api')
+    def api_root():
+        logger.info('Handling request to /api')
         response = make_response(jsonify({
             'message': 'Welcome to the API',
             'status': 'running'
