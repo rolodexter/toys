@@ -4,24 +4,20 @@ Flask application with database and authentication.
 
 import os
 import logging
-from flask import Flask, jsonify, request, redirect, url_for, current_user
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# Health check endpoint - must be defined first
+# Health check endpoint - must be first route
 @app.route('/health')
 def health():
-    return 'OK', 200
+    return 'OK'
 
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-this')
