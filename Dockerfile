@@ -1,3 +1,16 @@
+# Build stage for Web
+FROM node:18.17.0-slim as web-builder
+
+WORKDIR /app/web
+
+# Copy web files and install dependencies
+COPY web/package.json ./
+RUN npm install
+
+# Copy and build web app
+COPY web/ ./
+RUN npm run build
+
 # Production stage
 FROM python:3.12-slim-bookworm
 
@@ -10,8 +23,17 @@ RUN apt-get update && \
     python3-dev \
     libpq-dev \
     postgresql-server-dev-all \
+    gcc \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Copy web build output
+COPY --from=web-builder /app/web/.next/standalone ./
+COPY --from=web-builder /app/web/.next/static ./.next/static
+COPY --from=web-builder /app/web/public ./public
 
 # Copy and install Python requirements
 COPY api/requirements.txt ./api/
@@ -24,5 +46,7 @@ RUN chmod +x /start.sh
 
 # Set environment variables
 ENV PORT=3000
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 CMD ["/start.sh"]
