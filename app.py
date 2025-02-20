@@ -217,22 +217,29 @@ def create_app():
             username = request.form.get('username')
             password = request.form.get('password')
             
+            print(f"Login attempt - Username: {username}, Password length: {len(password)}")
             logger.info('Login attempt for username: %s', username)
             logger.info('Password length: %d', len(password))
             
             user = User.query.filter_by(username=username).first()
+            print(f"User found: {user is not None}")
             
             if user:
+                print(f"User details: {user}")
+                print(f"Has password hash: {user.password_hash is not None}")
                 logger.info('User found in database: %s', user)
                 logger.info('User password hash: %s', user.password_hash)
                 if user.check_password(password):
+                    print("Password check successful!")
                     logger.info('Password check successful')
                     login_user(user)
                     flash('Logged in successfully.')
                     return redirect(url_for('home'))
                 else:
+                    print("Password check failed!")
                     logger.warning('Invalid password for user: %s', username)
             else:
+                print(f"No user found with username: {username}")
                 logger.warning('User not found: %s', username)
             
             flash('Invalid username or password')
