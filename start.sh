@@ -30,5 +30,6 @@ sleep 2
 
 # Start Next.js
 cd /app
-echo "Starting Next.js..."
-exec node server.js
+echo "Starting Next.js on port $PORT..."
+export NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:5000
+exec node .next/standalone/server.js
