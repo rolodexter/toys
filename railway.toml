@@ -27,24 +27,34 @@ SERVICE_API_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME
 APP_WEB_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{RAILWAY_PROJECT_NAME}}.railway.app"
 FILES_URL = "https://${{RAILWAY_SERVICE_NAME}}.${{RAILWAY_ENVIRONMENT_NAME}}.${{RAILWAY_PROJECT_NAME}}.railway.app"
 
-# Database configuration (using references to toys-postgres service)
-DATABASE_URL = "${{toys-postgres.DATABASE_URL}}"
-DATABASE_PUBLIC_URL = "${{toys-postgres.DATABASE_PUBLIC_URL}}"
-PGHOST = "${{toys-postgres.PGHOST}}"
-PGPORT = "${{toys-postgres.PGPORT}}"
-PGDATABASE = "${{toys-postgres.PGDATABASE}}"
-PGUSER = "${{toys-postgres.PGUSER}}"
-PGPASSWORD = "${{toys-postgres.PGPASSWORD}}"
+# Using shared variables for database configuration
+DATABASE_URL = "${{DATABASE_URL}}"
+DATABASE_PUBLIC_URL = "${{DATABASE_PUBLIC_URL}}"
+PGHOST = "${{PGHOST}}"
+PGPORT = "${{PGPORT}}"
+PGDATABASE = "${{PGDATABASE}}"
+PGUSER = "${{PGUSER}}"
+PGPASSWORD = "${{PGPASSWORD}}"
 
-# Redis configuration (using references to toys-redis service)
-REDIS_HOST = "${{toys-redis.REDIS_HOST}}"
-REDIS_PORT = "${{toys-redis.REDIS_PORT}}"
-REDIS_PASSWORD = "${{toys-redis.REDIS_PASSWORD}}"
-REDIS_USER = "${{toys-redis.REDIS_USER}}"
+# Using shared variables for Redis configuration
+REDIS_HOST = "${{REDISHOST}}"  # Using REDISHOST as it's in shared variables
+REDIS_PORT = "${{REDISPORT}}"  # Using REDISPORT as it's in shared variables
+REDIS_PASSWORD = "${{REDISPASSWORD}}"  # Using REDISPASSWORD as it's in shared variables
+REDIS_USER = "${{REDISUSER}}"  # Using REDISUSER as it's in shared variables
 REDIS_USE_SSL = "true"
 REDIS_DB = "0"
-REDIS_URL = "${{toys-redis.REDIS_URL}}"
-REDIS_PUBLIC_URL = "${{toys-redis.REDIS_PUBLIC_URL}}"
+REDIS_URL = "${{REDIS_URL}}"
+REDIS_PUBLIC_URL = "${{REDIS_PUBLIC_URL}}"
+REDIS_AOF_ENABLED = "${{REDIS_AOF_ENABLED}}"
+REDIS_RDB_POLICY = "${{REDIS_RDB_POLICY}}"
+
+# Using shared Railway variables
+RAILWAY_PROJECT_ID = "${{RAILWAY_PROJECT_ID}}"
+RAILWAY_ENVIRONMENT_ID = "${{RAILWAY_ENVIRONMENT_ID}}"
+RAILWAY_SERVICE_ID = "${{RAILWAY_SERVICE_ID}}"
+RAILWAY_SERVICE_NAME = "${{RAILWAY_SERVICE_NAME}}"
+RAILWAY_PROJECT_NAME = "${{RAILWAY_PROJECT_NAME}}"
+RAILWAY_ENVIRONMENT_NAME = "${{RAILWAY_ENVIRONMENT_NAME}}"
 
 # Generate a random secret key for sessions
 SECRET_KEY = "${{RAILWAY_PRIVATE_KEY}}"
