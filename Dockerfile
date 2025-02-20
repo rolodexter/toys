@@ -11,22 +11,22 @@ RUN apt-get update && \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create api directory
-RUN mkdir -p /app/api/templates
-
-# Copy requirements and install
+# Copy requirements first for better caching
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy application code
-COPY app.py api/
-COPY api/models.py api/
-COPY api/templates/index.html api/templates/
-COPY api/templates/register.html api/templates/
+# Create necessary directories
+RUN mkdir -p /app/api/templates
+
+# Copy application files
+COPY app.py /app/api/
+COPY api/models.py /app/api/
+COPY api/templates/index.html /app/api/templates/
+COPY api/templates/register.html /app/api/templates/
 
 # Copy and setup start script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -37,5 +37,5 @@ ENV FLASK_ENV=production
 # Expose port
 EXPOSE 8080
 
-# Use start.sh as entrypoint
-ENTRYPOINT ["/start.sh"]
+# Set the entrypoint
+CMD ["/app/start.sh"]
