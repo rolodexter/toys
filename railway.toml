@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "docker/Dockerfile"
 
 [deploy]
-startCommand = "/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
+startCommand = "gunicorn -c gunicorn_config.py --log-file /app/api/gunicorn.log app:app"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
