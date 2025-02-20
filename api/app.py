@@ -4,10 +4,11 @@ Flask application with database and authentication.
 
 import os
 import logging
-from flask import Flask, jsonify, request, redirect, url_for
+from flask import Flask, jsonify, request, redirect, url_for, current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_cors import CORS
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-this')
@@ -91,6 +93,14 @@ def register():
 def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'})
+
+@app.route('/api/user')
+@login_required
+def get_user():
+    return jsonify({
+        'id': current_user.id,
+        'username': current_user.username
+    })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
