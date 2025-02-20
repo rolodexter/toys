@@ -291,6 +291,29 @@ def create_app():
             logger.error('Error in GitHub authorization callback: %s', str(e), exc_info=True)
             return 'Error processing GitHub login', 500
 
+    @app.route('/setup')
+    def setup():
+        """One-time setup route to create test user"""
+        try:
+            username = "rolodexter"
+            password = "asdfasdf"
+            
+            # Check if user already exists
+            user = User.query.filter_by(username=username).first()
+            if user:
+                return jsonify({'message': f'User {username} already exists'})
+            
+            # Create new user
+            user = User(username=username)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            
+            return jsonify({'message': f'Created user {username}'})
+        except Exception as e:
+            logger.error('Error in setup: %s', str(e), exc_info=True)
+            return jsonify({'error': str(e)}), 500
+
     @app.route('/health')
     def health():
         """Health check endpoint"""
