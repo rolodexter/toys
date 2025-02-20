@@ -3,13 +3,10 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "cd api && gunicorn app:app --bind 0.0.0.0:$PORT --worker-class gevent"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-[phases.setup]
-nixPkgs = ["nodejs-18_x", "python39", "python39Packages.pip"]
-
 [variables]
-NIXPACKS_NODE_VERSION = "18.17.0"
 PORT = "8000"
+NODE_ENV = "production"
+HOSTNAME = "0.0.0.0"
