@@ -3,7 +3,7 @@ Flask application with GitHub OAuth integration
 """
 from flask import Flask, jsonify, redirect, url_for, flash, render_template_string, request, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from flask_oauthlib.client import OAuth
+from authlib.integrations.flask_client import OAuth
 import logging
 import sys
 import os
@@ -90,16 +90,16 @@ def create_app():
         logger.error('GitHub OAuth credentials not set')
         raise ValueError('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be set')
     
-    github = oauth.remote_app(
-        'github',
-        consumer_key=os.environ.get('GITHUB_CLIENT_ID'),
-        consumer_secret=os.environ.get('GITHUB_CLIENT_SECRET'),
-        request_token_params={'scope': 'user:email'},
-        base_url='https://api.github.com/',
-        request_token_url=None,
-        access_token_method='POST',
+    github = oauth.register(
+        name='github',
+        client_id=os.environ.get('GITHUB_CLIENT_ID'),
+        client_secret=os.environ.get('GITHUB_CLIENT_SECRET'),
         access_token_url='https://github.com/login/oauth/access_token',
-        authorize_url='https://github.com/login/oauth/authorize'
+        access_token_params=None,
+        authorize_url='https://github.com/login/oauth/authorize',
+        authorize_params=None,
+        api_base_url='https://api.github.com/',
+        client_kwargs={'scope': 'user:email'},
     )
 
     @login_manager.user_loader
@@ -141,7 +141,8 @@ def create_app():
         """Initiate GitHub OAuth flow"""
         logger.info('GitHub login request received')
         try:
-            return github.authorize(callback=url_for('github_authorized', _external=True))
+            redirect_uri = url_for('github_authorized', _external=True)
+            return github.authorize_redirect(redirect_uri)
         except Exception as e:
             logger.error('Error initiating GitHub OAuth: %s', str(e), exc_info=True)
             return 'Error connecting to GitHub', 500
@@ -151,29 +152,30 @@ def create_app():
         """Handle GitHub OAuth callback"""
         logger.info('GitHub authorization callback received')
         try:
-            resp = github.authorized_response()
-            if resp is None or resp.get('access_token') is None:
-                logger.warning('GitHub authorization failed: %s', request.args.get('error_description', 'Unknown error'))
-                flash('Access denied: reason={} error={}'.format(
-                    request.args.get('error_reason', 'Unknown'),
-                    request.args.get('error_description', 'Unknown')
-                ))
+            token = github.authorize_access_token()
+            if not token:
+                logger.warning('GitHub authorization failed: No token received')
+                flash('Access denied: No token received')
                 return redirect(url_for('login'))
 
-            session['github_token'] = (resp['access_token'], '')
-            me = github.get('user')
-            
-            user = User.query.filter_by(github_id=me.data['id']).first()
+            resp = github.get('user', token=token)
+            if not resp or resp.status_code != 200:
+                logger.warning('Failed to get user info from GitHub')
+                flash('Failed to get user info from GitHub')
+                return redirect(url_for('login'))
+
+            profile = resp.json()
+            user = User.query.filter_by(github_id=profile['id']).first()
             if not user:
-                logger.info('Creating new user from GitHub: %s', me.data['login'])
+                logger.info('Creating new user from GitHub: %s', profile['login'])
                 user = User(
-                    username=me.data['login'],
-                    github_id=me.data['id'],
-                    github_login=me.data['login'],
-                    github_access_token=resp['access_token']
+                    username=profile['login'],
+                    github_id=profile['id'],
+                    github_login=profile['login'],
+                    github_access_token=token['access_token']
                 )
-                if 'email' in me.data and me.data['email']:
-                    user.email = me.data['email']
+                if profile.get('email'):
+                    user.email = profile['email']
                 db.session.add(user)
                 db.session.commit()
 
@@ -183,11 +185,6 @@ def create_app():
         except Exception as e:
             logger.error('Error in GitHub authorization callback: %s', str(e), exc_info=True)
             return 'Error processing GitHub login', 500
-
-    @github.tokengetter
-    def get_github_oauth_token():
-        """Get GitHub OAuth token from session"""
-        return session.get('github_token')
 
     @app.route('/health')
     def health():
