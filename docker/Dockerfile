@@ -44,7 +44,7 @@ FROM langgenius/dify-web:0.15.3 as web
 FROM nginx:alpine
 
 # Install dependencies
-RUN apk add --no-cache supervisor python3 py3-pip nodejs npm bash curl
+RUN apk add --no-cache supervisor python3 py3-pip nodejs npm bash curl netcat-openbsd
 
 # Copy the Dify API files
 COPY --from=api-base /app/api /app/api
@@ -108,40 +108,97 @@ EOF
 # Create a health check script
 COPY <<EOF /healthcheck.sh
 #!/bin/bash
-set -e
 
-echo "Starting health check..."
+echo "=== Starting health check ==="
+echo "Date: $(date)"
+echo "Hostname: $(hostname)"
 
-# Wait longer for services to be ready
-echo "Waiting for services to start..."
-sleep 30
-
-# Check if supervisor is running
-echo "Checking supervisor status..."
-supervisorctl status all || {
-    echo "Supervisor check failed"
-    exit 1
+# Function to check if a port is open
+check_port() {
+    nc -z localhost $1
+    return $?
 }
 
-# Check if the API is responding
+# Function to show process status
+show_process_status() {
+    echo "=== Process Status ==="
+    ps aux || ps
+    echo "=== Memory Usage ==="
+    free -h || echo "free command not available"
+    echo "=== Disk Space ==="
+    df -h
+}
+
+# Function to show supervisor status
+show_supervisor_status() {
+    echo "=== Supervisor Status ==="
+    supervisorctl status
+    echo "=== API Logs ==="
+    supervisorctl tail api 100
+    echo "=== Web Logs ==="
+    supervisorctl tail web 100
+    echo "=== Nginx Logs ==="
+    supervisorctl tail nginx 100
+}
+
+# Wait for services to start
+echo "Waiting 45 seconds for services to start..."
+sleep 45
+
+# Check supervisor
+echo "Checking supervisor..."
+if ! supervisorctl status > /dev/null; then
+    echo "ERROR: Supervisor is not running"
+    show_process_status
+    exit 1
+fi
+
+# Check ports
+echo "Checking ports..."
+echo "Checking port 5001 (API)..."
+if ! check_port 5001; then
+    echo "ERROR: API port 5001 is not open"
+    show_supervisor_status
+    show_process_status
+    exit 1
+fi
+
+echo "Checking port 3000 (Web)..."
+if ! check_port 3000; then
+    echo "ERROR: Web port 3000 is not open"
+    show_supervisor_status
+    show_process_status
+    exit 1
+fi
+
+echo "Checking port 80 (Nginx)..."
+if ! check_port 80; then
+    echo "ERROR: Nginx port 80 is not open"
+    show_supervisor_status
+    show_process_status
+    exit 1
+fi
+
+# Check API health
 echo "Checking API health..."
 if ! curl -f http://localhost:5001/health; then
-    echo "API health check failed"
-    echo "Checking supervisor logs..."
-    supervisorctl tail api
+    echo "ERROR: API health check failed"
+    show_supervisor_status
+    show_process_status
     exit 1
 fi
 
-# Check if the web interface is accessible
+# Check web interface
 echo "Checking web interface..."
 if ! curl -f http://localhost:3000; then
-    echo "Web interface check failed"
-    echo "Checking supervisor logs..."
-    supervisorctl tail web
+    echo "ERROR: Web interface check failed"
+    show_supervisor_status
+    show_process_status
     exit 1
 fi
 
-echo "All health checks passed!"
+echo "=== All health checks passed! ==="
+exit 0
 EOF
 
 RUN chmod +x /healthcheck.sh
@@ -161,7 +218,7 @@ ENV PYTHONPATH=/app/api
 EXPOSE 80 5001 3000
 
 # Add health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=5 \
+HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=5 \
     CMD /healthcheck.sh
 
 # Start supervisor which will start all services
