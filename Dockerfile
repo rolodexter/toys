@@ -5,7 +5,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# Copy application files
 COPY app.py wsgi.py ./
+COPY templates templates/
 
 ENV PORT=8080
 ENV PYTHONUNBUFFERED=1
