@@ -182,16 +182,34 @@ source /app/api/venv/bin/activate
 echo "=== Environment Variables ==="
 env | sort
 
+# Create required directories
+echo "=== Creating Required Directories ==="
+mkdir -p /app/api/instance /app/api/logs /app/api/.tiktoken_cache
+chmod -R 755 /app/api/instance /app/api/logs /app/api/.tiktoken_cache
+
+# Initialize database
+echo "=== Initializing Database ==="
+cd /app/api
+if [ ! -f instance/db.sqlite ]; then
+    echo "Creating new database..."
+    flask db upgrade
+    flask init
+else
+    echo "Database exists, running migrations..."
+    flask db upgrade
+fi
+
 # Start gunicorn with output
 echo "=== Starting Gunicorn ==="
-PYTHONPATH=/app/api exec gunicorn -c gunicorn_config.py app:app
+cd /app/api
+PYTHONPATH=/app/api exec gunicorn -c gunicorn_config.py --log-file /app/api/gunicorn.log --log-level debug app:app
 EOF
 
 RUN chmod +x /start.sh
 
 # Create required directories and set permissions
-RUN mkdir -p /app/api/instance /app/api/logs && \
-    chmod -R 755 /app/api/instance /app/api/logs
+RUN mkdir -p /app/api/instance /app/api/logs /app/api/.tiktoken_cache && \
+    chmod -R 755 /app/api/instance /app/api/logs /app/api/.tiktoken_cache
 
 # Expose API port
 EXPOSE 5001

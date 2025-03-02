@@ -58,7 +58,7 @@ PGVECTOR_DATABASE = "${PGDATABASE}"
 
 # Core Settings
 SECRET_KEY = "your-secret-key"
-INIT_PASSWORD = "${INIT_PASSWORD}"
+INIT_PASSWORD = "password123"
 
 # Server Configuration
 SERVER_WORKER_AMOUNT = "2"
@@ -71,11 +71,14 @@ CELERY_WORKER_AMOUNT = "2"
 MIGRATION_ENABLED = "true"
 
 # Additional Environment Variables
-SQLALCHEMY_DATABASE_URI = "sqlite:///db.sqlite"
+FLASK_APP = "app.py"
+SQLALCHEMY_DATABASE_URI = "sqlite:///instance/db.sqlite"
 SESSION_TYPE = "filesystem"
 SESSION_PERMANENT = "true"
 SESSION_USE_SIGNER = "true"
 CLEAN_UNFINISHED_INIT_MODEL_TASK = "true"
 LOGGER_TYPE = "basic"
 HOSTED_SETUP_COMPLETED = "true"
-LOG_LEVEL = "INFO"
+LOG_LEVEL = "DEBUG"
+EDITION = "SELF_HOSTED"
+TZ = "UTC"
